@@ -108,7 +108,6 @@ test_STM_2 <- stm(documents = out$documents,
 labelTopics(test_STM_2)
 ```
 
-
 ## Visualise the relationships
 
 ```{r}
