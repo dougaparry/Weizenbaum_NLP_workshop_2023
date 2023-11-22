@@ -1,0 +1,474 @@
+---
+title: "Session 1: Introduction"
+format:
+  revealjs:
+    slide-number: true
+    show-slide-number: print
+---
+
+# Who am I?
+
+::: {style="font-size: 50%;"}
+::: columns
+::: {.column width="50%"}
+-   Senior Lecturer in Socio-informatics at Stellenbosch University.
+-   Mixed methods: Qualitative, quantitative, computational, synthesis
+-   PhD (2019) --- media multitasking & attention management
+-   Information Science and Cognition & Technology Research Group (CTRG)
+-   Media effects, behaviour, meta-research, methods
+:::
+
+::: {.column width="50%"}
+![](figs/stb.jpg){fig-align="center"}
+:::
+:::
+:::
+
+## Who are you?
+
+-   R or Python or... ?
+-   PhD student, postdoc, faculty?
+-   Research areas?
+-   Prior experience with text analysis?
+
+## Structure of the workshop
+
+-   **09h00 - 11h00: session 1 text analysis fundamentals**
+    -   11h00 - 11h15: break - coffee
+    -   11h15 - 12h00: session 2 practical exercises
+-   **12h00 - 13h00: lunch**
+-   **13h00 - 15h00: session 3 topic modeling**
+    -   15h00 - 15h15: break - coffee
+    -   15h15 - 16h00: session 4 practical exercises
+-   **16h00 - 16h45: session 6 conclude**
+
+
+## Resources (first port of call)
+
+![](figs/book.png){fig-align="center"}
+
+https://www.tidytextmining.com
+
+## What is text analysis?
+
+-   The process of extracting meaning from text data in some way.
+-   Label/classify what a document/text is about.
+-   Classification task
+-   Substantial emphasis on preprocessing
+-   Only covering basics in this workshop (text wrangling, dictionary/sentiment analysis, topic modelling)
+-   More advance topics (e.g., word embeddings, transformers, LLMs, etc.) on your own
+
+
+## Data formats for text analysis
+
+(more on this later)
+
+-   **String**: basic character vectors
+-   **Corpus**: raw strings annotated with additional metadata
+-   **Document-term matrix (DTM)**: sparse matrix describing a collection of documents with one row for each document and one column for each term. The value in the matrix is typically word count.
+-   **tidytext**...
+
+## The tidytext format
+
+Part of the [tidyverse](https://www.tidyverse.org/) approach to data analysis.
+
+-   The tidyverse is an opinionated collection of R packages designed for data science. All packages share an underlying design philosophy, grammar, and data structures.
+
+Tidy data characteristics
+
+-   each variable is a column
+-   each observation is a row
+-   each type of observational unit is its own table
+
+Tidytext format: **a table with one token per row**
+
+## Tidy text analysis
+
+![](figs/tmwr_0101.png){width="90%"}
+
+## Packages for the first session
+
+```{r}
+#| echo: true
+
+#install.packages(tidyverse) #if the package is not yet installed
+
+library(tidyverse)
+library(tidytext)
+library(ggplot2)
+
+library(janeaustenr)
+library(dplyr)
+library(stringr)
+```
+
+
+## Working with text data
+
+```{r}
+#| echo: true
+
+text <- c("Because I could not stop for Death -",
+          "He kindly stopped for me -",
+          "The Carriage held but just Ourselves -",
+          "and Immortality")
+
+text_df <- tibble(line = 1:4, text = text)
+text_df
+```
+
+
+## Tokenise the text to start the analysis
+
+```{r}
+#| echo: true
+
+tidy_data <- text_df |> 
+  unnest_tokens(word, text)
+
+head(tidy_data, 10)
+```
+
+## Setup data for later examples
+
+```{r}
+#| echo: true
+
+original_books <- austen_books() |> 
+  group_by(book) |> 
+  mutate(linenumber = row_number(),
+         chapter = cumsum(str_detect(text, 
+                                     regex("^chapter [\\divxlc]",
+                                           ignore_case = TRUE)))) |> 
+  ungroup()
+```
+
+
+------------------------------------------------------------------------
+
+```{r}
+#| echo: true
+
+tidy_books <- original_books |> 
+  unnest_tokens(word, text)
+
+head(tidy_books)
+```
+
+## Text preprocessing
+
+Remove punctuation, numbers, symbols, URLs, etc...
+
+-   Tokenisation
+    -   Removes whitespace, punctuation (if run using `unnest_tokens`)
+    -   Splits the text into the unit for analysis (i.e., unigrams)
+-   (optional) lemmatization
+-   (optional) stemming
+-   (optional) Stopword removal
+-   (optional) tagging (discussed later)
+
+
+## Stop word removal
+
+```{r}
+#| echo: true
+
+data(stop_words)
+stop_words
+```
+
+::: notes
+we can use an anti join to do stop word removal in the tidytext format for this we first need a dataset of stopwords, luckily for us, the package provides a dictionary of basic stopwords
+:::
+
+## Stop word removal
+
+```{r}
+#| echo: true
+
+tidy_books <- tidy_books |> 
+  anti_join(stop_words) 
+
+head(tidy_books)
+```
+
+
+## Analysing text data
+
+Finding the most common words in the dataset
+
+```{r}
+#| echo: true
+#| output-location: slide
+
+tidy_books |> 
+  count(word, sort = TRUE) |> 
+  filter(n > 600) |> 
+  mutate(word = reorder(word, n)) |> 
+  ggplot(aes(n, word)) +
+  geom_col() +
+  labs(y = NULL) + 
+  theme_bw()
+```
+
+## Analyzing word and document frequency: tf-idf
+
+Term frequency-inverse document frequency (TF-IDF) is a metric that weighs the frequency of a term within a particular document (IDF) in relation to its frequency within the entire corpus (TF).
+
+  
+```{r}
+#| echo: true
+#| output-location: slide
+
+#part 1
+book_words <- austen_books() %>%
+  unnest_tokens(word, text) %>%
+  count(book, word, sort = TRUE)
+
+#part 2
+total_words <- book_words %>% 
+  group_by(book) %>% 
+  summarize(total = sum(n))
+
+#part 3
+book_words <- left_join(book_words, total_words)
+
+#result
+book_words
+```
+
+## Visualise the output
+
+```{r}
+ggplot(book_words, aes(n/total, fill = book)) +
+  geom_histogram(show.legend = FALSE) +
+  xlim(NA, 0.0009) +
+  facet_wrap(~book, ncol = 2, scales = "free_y") + 
+  theme_bw()
+```
+
+
+## The bind_tf_idf() function
+
+```{r}
+book_tf_idf <- book_words %>%
+  bind_tf_idf(word, book, n)
+
+book_tf_idf
+```
+
+## Inspect output
+
+```{r}
+book_tf_idf %>%
+  select(-total) %>%
+  arrange(desc(tf_idf))
+```
+
+## Text classification
+
+-   Dictionary-based analyses (identifying keywords)
+-   Sentiment analysis
+    -   Using predefined lexicons (dictionaries) to classify a text.
+        -   Lexicons for polarity (positive/negative), emotionality, aggression, moral foundations, etc.
+    -   Create your own lexicon...
+
+## Beyond bag of words
+
+Valence shifters, word order, parts of speech, sentence structure, slang, and context-specific phrasing...
+
+-   Packages
+    -   VADER
+    -   sentimentr
+
+## Text classification
+
+![](figs/tmwr_0201.png){fig-align="center"}
+
+
+## Sentiment analysis using the tidytext approach
+
+3 built-in lexicons (can import others and/or create your own)
+
+-   **AFINN** from Finn Årup Nielsen,
+-   **bing** from Bing Liu and collaborators, and
+-   **nrc** from Saif Mohammad and Peter Turney.
+
+------------------------------------------------------------------------
+
+```{r}
+#| echo: true
+get_sentiments("afinn")
+```
+
+------------------------------------------------------------------------
+
+```{r}
+#| echo: true
+get_sentiments("bing")
+```
+
+------------------------------------------------------------------------
+
+```{r}
+#| echo: true
+get_sentiments("nrc")
+```
+
+## Sentiment analysis with tidytext
+
+```{r}
+#| echo: true
+nrc_sadness <- get_sentiments("nrc") |>  
+  filter(sentiment == "sadness")
+
+tidy_books |> 
+  filter(book == "Emma") |> 
+  inner_join(nrc_sadness) |> 
+  count(word, sort = TRUE)
+```
+
+## How postive are the books?
+
+```{r}
+#| echo: true
+#| output-location: slide
+jane_austen_sentiment <- tidy_books |> 
+  inner_join(get_sentiments("bing")) |> 
+  count(book, index = linenumber %/% 80, sentiment) |> 
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) |> 
+  mutate(sentiment = positive - negative)
+
+ggplot(jane_austen_sentiment, aes(index, sentiment, fill = book)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~book, ncol = 2, scales = "free_x") + theme_bw()
+```
+
+# Sentence level analysis
+
+## `sentimentr` for sentence level sentiment analysis
+
+[sentimentr](https://github.com/trinker/sentimentr) attempts to account for valence shifters (i.e., negators, amplifiers, de-amplifiers, and adversative conjunctions) while maintaining speed.
+
+```{r}
+#| echo: true
+library(tokenizers)
+library(sentimentr)
+```
+
+## Setup for sentence-level analysis
+
+```{r}
+#| echo: true
+#| output-location: slide
+sense_and_sensibility <- austen_books() |> 
+  group_by(book) |> 
+  mutate(linenumber = row_number(),
+         chapter = cumsum(str_detect(text,
+                                     regex("^chapter [\\divxlc]",
+                                           ignore_case = TRUE)))) |> 
+  ungroup() |> 
+  filter(book == "Sense & Sensibility")
+
+sense_and_sensibility <- sense_and_sensibility |> 
+  group_by(book, chapter) |> 
+  summarise_at(vars(-group_cols()),  str_c, collapse=" ")
+
+head(sense_and_sensibility)
+```
+
+## calculate sentence level sentiment using SentimentR
+
+```{r}
+#| echo: true
+#| output-location: slide
+sense_and_sensibility_sentiment <- sense_and_sensibility |>  
+  get_sentences(text) |>  
+  sentiment_by(by = 'chapter',
+               polarity_dt = lexicon::hash_sentiment_jockers_rinker,
+               valence_shifters_dt = lexicon::hash_valence_shifters,
+               amplifier.weight = 2,
+               n.before = 3, n.after = 3,
+               question.weight = 0,
+               neutral.nonverb.like = TRUE)
+
+sense_and_sensibility_sentiment
+```
+
+
+## Plot the output
+
+```{r}
+#| echo: true
+sense_and_sensibility_sentiment |>
+  ggplot(aes(x = ave_sentiment))+
+  geom_density() +
+  theme_minimal()
+```
+
+## Rescale the sentiment scores
+
+```{r}
+#| echo: true
+#| output-location: slide
+sense_and_sensibility_sentiment <- sense_and_sensibility_sentiment |>   
+  mutate(ave_sentiment = general_rescale(ave_sentiment, 
+                                         lower = -1, 
+                                         upper = 1, 
+                                         keep.zero = TRUE)) 
+#keep zeros as neutral
+
+sense_and_sensibility_sentiment |>
+  ggplot(aes(x = ave_sentiment))+
+  geom_density() +
+  theme_minimal()
+```
+
+## Thresholds
+
+- positive sentiment: sentiment >= 0.05
+- neutral sentiment: (sentiment > -0.05) and (sentiment < 0.05)
+- negative sentiment: sentiment <= -0.05
+
+## Bring back the rest of the data
+
+```{r}
+#| echo: true
+#| output-location: slide
+
+sense_and_sensibility_sentiment <- sense_and_sensibility_sentiment |>
+  left_join(sense_and_sensibility, by = "chapter") |>
+  mutate(chapter = as.factor(chapter))
+
+glimpse(sense_and_sensibility_sentiment)
+```
+
+## Plot sentiment
+
+```{r}
+#| echo: true
+#| output-location: slide
+
+color <- ifelse(sense_and_sensibility_sentiment$ave_sentiment < 0, "pink", "lightblue")
+
+sense_and_sensibility_sentiment |>
+  group_by(chapter) |>
+  ggplot(aes(x = fct_reorder(chapter, ave_sentiment), y = ave_sentiment)) +
+  geom_hline(yintercept=0, linetype=4)+
+  geom_col(fill = color) +
+  labs(x = "Chapter", y = "Sentiment", title = "Sentiment", subtitle = "By chapter")+
+  coord_flip()+
+  theme_minimal() +
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+  )
+```
+
+## Concluding thoughts on dictionary/sentiment analysis
+
+- many other techniques to generalise from these basics
+- use the sentiment scores in your models
+- classify more than just positive/negative... civility, aggressiveness, anger, abusive language, etc.
+- limitations: often less effective with short text
+

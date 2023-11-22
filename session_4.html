@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="session_4_files/libs/clipboard/clipboard.min.js"></script>
+<script src="session_4_files/libs/quarto-html/tabby.min.js"></script>
+<script src="session_4_files/libs/quarto-html/popper.min.js"></script>
+<script src="session_4_files/libs/quarto-html/tippy.umd.min.js"></script>
+<link href="session_4_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="session_4_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="session_4_files/libs/quarto-html/quarto-html.min.css" rel="stylesheet" data-mode="light">
+<link href="session_4_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.3.450">
+
+  <title>Session 4: Topic Modelling</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="session_4_files/libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="session_4_files/libs/revealjs/dist/reveal.css">
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      { color: #003b4f; background-color: #f1f3f5; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #003b4f; } /* Normal */
+    code span.al { color: #ad0000; } /* Alert */
+    code span.an { color: #5e5e5e; } /* Annotation */
+    code span.at { color: #657422; } /* Attribute */
+    code span.bn { color: #ad0000; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #003b4f; } /* ControlFlow */
+    code span.ch { color: #20794d; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #5e5e5e; } /* Comment */
+    code span.cv { color: #5e5e5e; font-style: italic; } /* CommentVar */
+    code span.do { color: #5e5e5e; font-style: italic; } /* Documentation */
+    code span.dt { color: #ad0000; } /* DataType */
+    code span.dv { color: #ad0000; } /* DecVal */
+    code span.er { color: #ad0000; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #ad0000; } /* Float */
+    code span.fu { color: #4758ab; } /* Function */
+    code span.im { color: #00769e; } /* Import */
+    code span.in { color: #5e5e5e; } /* Information */
+    code span.kw { color: #003b4f; } /* Keyword */
+    code span.op { color: #5e5e5e; } /* Operator */
+    code span.ot { color: #003b4f; } /* Other */
+    code span.pp { color: #ad0000; } /* Preprocessor */
+    code span.sc { color: #5e5e5e; } /* SpecialChar */
+    code span.ss { color: #20794d; } /* SpecialString */
+    code span.st { color: #20794d; } /* String */
+    code span.va { color: #111111; } /* Variable */
+    code span.vs { color: #20794d; } /* VerbatimString */
+    code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="session_4_files/libs/revealjs/dist/theme/quarto.css">
+  <link href="session_4_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="session_4_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="session_4_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="session_4_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+
+  .callout {
+    margin-top: 1em;
+    margin-bottom: 1em;  
+    border-radius: .25rem;
+  }
+
+  .callout.callout-style-simple { 
+    padding: 0em 0.5em;
+    border-left: solid #acacac .3rem;
+    border-right: solid 1px silver;
+    border-top: solid 1px silver;
+    border-bottom: solid 1px silver;
+    display: flex;
+  }
+
+  .callout.callout-style-default {
+    border-left: solid #acacac .3rem;
+    border-right: solid 1px silver;
+    border-top: solid 1px silver;
+    border-bottom: solid 1px silver;
+  }
+
+  .callout .callout-body-container {
+    flex-grow: 1;
+  }
+
+  .callout.callout-style-simple .callout-body {
+    font-size: 1rem;
+    font-weight: 400;
+  }
+
+  .callout.callout-style-default .callout-body {
+    font-size: 0.9rem;
+    font-weight: 400;
+  }
+
+  .callout.callout-titled.callout-style-simple .callout-body {
+    margin-top: 0.2em;
+  }
+
+  .callout:not(.callout-titled) .callout-body {
+      display: flex;
+  }
+
+  .callout:not(.no-icon).callout-titled.callout-style-simple .callout-content {
+    padding-left: 1.6em;
+  }
+
+  .callout.callout-titled .callout-header {
+    padding-top: 0.2em;
+    margin-bottom: -0.2em;
+  }
+
+  .callout.callout-titled .callout-title  p {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+  }
+    
+  .callout.callout-titled.callout-style-simple .callout-content  p {
+    margin-top: 0;
+  }
+
+  .callout.callout-titled.callout-style-default .callout-content  p {
+    margin-top: 0.7em;
+  }
+
+  .callout.callout-style-simple div.callout-title {
+    border-bottom: none;
+    font-size: .9rem;
+    font-weight: 600;
+    opacity: 75%;
+  }
+
+  .callout.callout-style-default  div.callout-title {
+    border-bottom: none;
+    font-weight: 600;
+    opacity: 85%;
+    font-size: 0.9rem;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+  }
+
+  .callout.callout-style-default div.callout-content {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+  }
+
+  .callout.callout-style-simple .callout-icon::before {
+    height: 1rem;
+    width: 1rem;
+    display: inline-block;
+    content: "";
+    background-repeat: no-repeat;
+    background-size: 1rem 1rem;
+  }
+
+  .callout.callout-style-default .callout-icon::before {
+    height: 0.9rem;
+    width: 0.9rem;
+    display: inline-block;
+    content: "";
+    background-repeat: no-repeat;
+    background-size: 0.9rem 0.9rem;
+  }
+
+  .callout-title {
+    display: flex
+  }
+    
+  .callout-icon::before {
+    margin-top: 1rem;
+    padding-right: .5rem;
+  }
+
+  .callout.no-icon::before {
+    display: none !important;
+  }
+
+  .callout.callout-titled .callout-body > .callout-content > :last-child {
+    margin-bottom: 0.5rem;
+  }
+
+  .callout.callout-titled .callout-icon::before {
+    margin-top: .5rem;
+    padding-right: .5rem;
+  }
+
+  .callout:not(.callout-titled) .callout-icon::before {
+    margin-top: 1rem;
+    padding-right: .5rem;
+  }
+
+  /* Callout Types */
+
+  div.callout-note {
+    border-left-color: #4582ec !important;
+  }
+
+  div.callout-note .callout-icon::before {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAIKADAAQAAAABAAAAIAAAAACshmLzAAAEU0lEQVRYCcVXTWhcVRQ+586kSUMMxkyaElstCto2SIhitS5Ek8xUKV2poatCcVHtUlFQk8mbaaziwpWgglJwVaquitBOfhQXFlqlzSJpFSpIYyXNjBNiTCck7x2/8/LeNDOZxDuEkgOXe++553zfefee+/OYLOXFk3+1LLrRdiO81yNqZ6K9cG0P3MeFaMIQjXssE8Z1JzLO9ls20MBZX7oG8w9GxB0goaPrW5aNMp1yOZIa7Wv6o2ykpLtmAPs/vrG14Z+6d4jpbSKuhdcSyq9wGMPXjonwmESXrriLzFGOdDBLB8Y6MNYBu0dRokSygMA/mrun8MGFN3behm6VVAwg4WR3i6FvYK1T7MHo9BK7ydH+1uurECoouk5MPRyVSBrBHMYwVobG2aOXM07sWrn5qgB60rc6mcwIDJtQrnrEr44kmy+UO9r0u9O5/YbkS9juQckLed3DyW2XV/qWBBB3ptvI8EUY3I9p/67OW+g967TNr3Sotn3IuVlfMLVnsBwH4fsnebJvyGm5GeIUA3jljERmrv49SizPYuq+z7c2H/jlGC+Ghhupn/hcapqmcudB9jwJ/3jvnvu6vu5lVzF1fXyZuZZ7U8nRmVzytvT+H3kilYvH09mLWrQdwFSsFEsxFVs5fK7A0g8gMZjbif4ACpKbjv7gNGaD8bUrlk8x+KRflttr22JEMRUbTUwwDQScyzPgedQHZT0xnx7ujw2jfVfExwYHwOsDTjLdJ2ebmeQIlJ7neo41s/DrsL3kl+W2lWvAga0tR3zueGr6GL78M3ifH0rGXrBC2aAR8uYcIA5gwV8zIE8onoh8u0Fca/ciF7j1uOzEnqcIm59sEXoGc0+z6+H45V1CvAvHcD7THztu669cnp+L0okAeIc6zjbM/24LgGM1gZk7jnRu1aQWoU9sfUOuhrmtaPIO3YY1KLLWZaEO5TKUbMY5zx8W9UJ6elpLwKXbsaZ4EFl7B4bMtDv0iRipKoDQT2sNQI9b1utXFdYisi+wzZ/ri/1m7QfDgEuvgUUEIJPq3DhX/5DWNqIXDOweC2wvIR90Oq3lDpdMIgD2r0dXvGdsEW5H6x6HLRJYU7C69VefO1x8Gde1ZFSJLfWS1jbCnhtOPxmpfv2LXOA2Xk2tvnwKKPFuZ/oRmwBwqRQDcKNeVQkYcOjtWVBuM/JuYw5b6isojIkYxyYAFn5K7ZBF10fea52y8QltAg6jnMqNHFBmGkQ1j+U43HMi2xMar1Nv0zGsf1s8nUsmUtPOOrbFIR8bHFDMB5zL13Gmr/kGlCkUzedTzzmzsaJXhYawnA3UmARpiYj5ooJZiUoxFRtK3X6pgNPv+IZVPcnwbOl6f+aBaO1CNvPW9n9LmCp01nuSaTRF2YxHqZ8DYQT6WsXT+RD6eUztwYLZ8rM+rcPxamv1VQzFUkzFXvkiVrySGQgJNvXHJAxiU3/NwiC03rSf05VBaPtu/Z7/B8Yn/w7eguloAAAAAElFTkSuQmCC');
+  }
+
+  div.callout-note.callout-style-default .callout-title {
+    background-color: #dae6fb
+  }
+
+  div.callout-important {
+    border-left-color: #d9534f !important;
+  }
+
+  div.callout-important .callout-icon::before {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAIKADAAQAAAABAAAAIAAAAACshmLzAAAEKklEQVRYCcVXTWhcVRS+575MJym48A+hSRFr00ySRQhURRfd2HYjk2SSTokuBCkU2o0LoSKKraKIBTcuFCoidGFD08nkBzdREbpQ1EDNIv8qSGMFUboImMSZd4/f9zJv8ibJMC8xJQfO3HPPPef7zrvvvnvviIkpC9nsw0UttFunbUhpFzFtarSd6WJkStVMw5xyVqYTvkwfzuf/5FgtkVoB0729j1rjXwThS7Vio+Mo6DNnvLfahoZ+i/o32lULuJ3NNiz7q6+pyAUkJaFF6JwaM2lUJlV0MlnQn5aTRbEu0SEqHUa0A4AdiGuB1kFXRfVyg5d87+Dg4DL6m2TLAub60ilj7A1Ec4odSAc8X95sHh7+ZRPCFo6Fnp7HfU/fBng/hi10CjCnWnJjsxvDNxWw0NfV6Rv5GgP3I3jGWXumdTD/3cbEOP2ZbOZp69yniG3FQ9z1jD7bnBu9Fc2tKGC2q+uAJOQHBDRiZX1x36o7fWBs7J9ownbtO+n0/qWkvW7UPIfc37WgT6ZGR++EOJyeQDSb9UB+DZ1G6DdLDzyS+b/kBCYGsYgJbSQHuThGKRcw5xdeQf8YdNHsc6ePXrlSYMBuSIAFTGAtQo+VuALo4BX83N190NWZWbynBjhOHsmNfFWLeL6v+ynsA58zDvvAC8j5PkbOcXCMg2PZFk3q8MjI7WAG/Dp9AwP7jdGBOOQkAvlFUB+irtm16I1Zw9YBcpGTGXYmk3kQIC/Cds55l+iMI3jqhjAuaoe+am2Jw5GT3Nbz3CkE12NavmzN5+erJW7046n/CH1RO/RVa8lBLozXk9uqykkGAyRXLWlLv5jyp4RFsG5vGVzpDLnIjTWgnRy2Rr+tDKvRc7Y8AyZq10jj8DqXdnIRNtFZb+t/ZRtXcDiVnzpqx8mPcDWxgARUqx0W1QB9MeUZiNrV4qP+Ehc+BpNgATsTX8ozYKL2NtFYAHc84fG7ndxUPr+AR/iQSns7uSUufAymwDOb2+NjK27lEFocm/EE2WpyIy/Hi66MWuMKJn8RvxIcj87IM5Vh9663ziW36kR0HNenXuxmfaD8JC7tfKbrhFr7LiZCrMjrzTeGx+PmkosrkNzW94ObzwocJ7A1HokLolY+AvkTiD/q1H0cN48c5EL8Crkttsa/AXQVDmutfyku0E7jShx49XqV3MFK8IryDhYVbj7Sj2P2eBxwcXoe8T8idsKKPRcnZw1b+slFTubwUwhktrfnAt7J++jwQtLZcm3sr9LQrjRzz6cfMv9aLvgmnAGvpoaGLxM4mAEaLV7iAzQ3oU0IvD5x9ix3yF2RAAuYAOO2f7PEFWCXZ4C9Pb2UsgDeVnFSpbFK7/IWu7TPTvBqzbGdCHOJQSxiEjt6IyZmxQyEJHv6xyQsYk//moVFsN2zP6fRImjfq7/n/wFDguUQFNEwugAAAABJRU5ErkJggg==');
+  }
+
+  div.callout-important.callout-style-default .callout-title {
+    background-color: #f7dddc
+  }
+
+  div.callout-warning {
+    border-left-color: #f0ad4e !important;
+  }
+
+  div.callout-warning .callout-icon::before {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAIKADAAQAAAABAAAAIAAAAACshmLzAAAETklEQVRYCeVWW2gcVRg+58yaTUnizqbipZeX4uWhBEniBaoUX1Ioze52t7sRq6APio9V9MEaoWlVsFasRq0gltaAPuxms8lu0gcviE/FFOstVbSIxgcv6SU7EZqmdc7v9+9mJtNks51NTUH84ed889/PP+cmxP+d5FIbMJmNbpREu4WUkiTtCicKny0l1pIKmBzovF2S+hIJHX8iEu3hZJ5lNZGqyRrGSIQpq15AzF28jgpeY6yk6GVdrfFqdrD6Iw+QlB8g0YS2g7dyQmXM/IDhBhT0UCiRf59lfqmmDvzRt6kByV/m4JjtzuaujMUM2c5Z2d6JdKrRb3K2q6mA+oYVz8JnDdKPmmNthzkAk/lN63sYPgevrguc72aZX/L9C6x09GYyxBgCX4NlvyGUHOKELlm5rXeR1kchuChJt4SSwyddZRXgvwMGvYo4QSlk3/zkHD8UHxwVJA6zjZZqP8v8kK8OWLnIZtLyCAJagYC4rTGW/9Pqj92N/c+LUaAj27movwbi19tk/whRCIE7Q9vyI6yvRpftAKVTdUjOW40X3h5OXsKCdmFcx0xlLJoSuQngnrJe7Kcjm4OMq9FlC7CMmScQANuNvjfP3PjGXDBaUQmbp296S5L4DrpbrHN1T87ZVEZVCzg1FF0Ft+dKrlLukI+/c9ENo+TvlTDbYFvuKPtQ9+l052rXrgKoWkDAFnvh0wTOmYn8R5f4k/jN/fZiCM1tQx9jQQ4ANhqG4hiL0qIFTGViG9DKB7GYzgubnpofgYRwO+DFjh0Zin2m4b/97EDkXkc+f6xYAPX0KK2I/7fUQuwzuwo/L3AkcjugPNixC8cHf0FyPjWlItmLxWw4Ou9YsQCr5fijMGoD/zpdRy95HRysyXA74MWOnscpO4j2y3HAVisw85hX5+AFBRSHt4ShfLFkIMXTqyKFc46xdzQM6XbAi702a7sy04J0+feReMFKp5q9esYLCqAZYw/k14E/xcLLsFElaornTuJB0svMuJINy8xkIYuL+xPAlWRceH6+HX7THJ0djLUom46zREu7tTkxwmf/FdOZ/sh6Q8qvEAiHpm4PJ4a/doJe0gH1t+aHRgCzOvBvJedEK5OFE5jpm4AGP2a8Dxe3gGJ/pAutug9Gp6he92CsSsWBaEcxGx0FHytmIpuqGkOpldqNYQK8cSoXvd+xLxXADw0kf6UkJNFtdo5MOgaLjiQOQHcn+A6h5NuL2s0qsC2LOM75PcF3yr5STuBSAcGG+meA14K/CI21HcS4LBT6tv0QAh8Dr5l93AhZzG5ZJ4VxAqdZUEl9z7WJ4aN+svMvwHHL21UKTd1mqvChH7/Za5xzXBBKrUcB0TQ+Ulgkfbi/H/YT5EptrGzsEK7tR1B7ln9BBwckYfMiuSqklSznIuoIIOM42MQO+QnduCoFCI0bpkzjCjddHPN/F+2Yu+sd9bKNpVwHhbS3LluK/0zgfwD0xYI5dXuzlQAAAABJRU5ErkJggg==');
+  }
+
+  div.callout-warning.callout-style-default .callout-title {
+    background-color: #fcefdc
+  }
+
+  div.callout-tip {
+    border-left-color: #02b875 !important;
+  }
+
+  div.callout-tip .callout-icon::before {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAIKADAAQAAAABAAAAIAAAAACshmLzAAADr0lEQVRYCe1XTWgTQRj9ZjZV8a9SPIkKgj8I1bMHsUWrqYLVg4Ue6v9BwZOxSYsIerFao7UiUryIqJcqgtpimhbBXoSCVxUFe9CTiogUrUp2Pt+3aUI2u5vdNh4dmMzOzHvvezuz8xNFM0mjnbXaNu1MvFWRXkXEyE6aYOYJpdW4IXuA4r0fo8qqSMDBU0v1HJUgVieAXxzCsdE/YJTdFcVIZQNMyhruOMJKXYFoLfIfIvVIMWdsrd+Rpd86ZmyzzjJmLStqRn0v8lzkb4rVIXvnpScOJuAn2ACC65FkPzEdEy4TPWRLJ2h7z4cArXzzaOdKlbOvKKX25Wl00jSnrwVxAg3o4dRxhO13RBSdNvH0xSARv3adTXbBdTf64IWO2vH0LT+cv4GR1DJt+DUItaQogeBX/chhbTBxEiZ6gftlDNXTrvT7co4ub5A6gp9HIcHvzTa46OS5fBeP87Qm0fQkr4FsYgVQ7Qg+ZayaDg9jhg1GkWj8RG6lkeSacrrHgDaxdoBiZPg+NXV/KifMuB6//JmYH4CntVEHy/keA6x4h4CU5oFy8GzrBS18cLJMXcljAKB6INjWsRcuZBWVaS3GDrqB7rdapVIeA+isQ57Eev9eCqzqOa81CY05VLd6SamW2wA2H3SiTbnbSxmzfp7WtKZkqy4mdyAlGx7ennghYf8voqp9cLSgKdqNfa6RdRsAAkPwRuJZNbpByn+RrJi1RXTwdi8RQF6ymDwGMAtZ6TVE+4uoKh+MYkcLsT0Hk8eAienbiGdjJHZTpmNjlbFJNKDVAp2fJlYju6IreQxQ08UJDNYdoLSl6AadO+fFuCQqVMB1NJwPm69T04Wv5WhfcWyfXQB+wXRs1pt+nCknRa0LVzSA/2B+a9+zQJadb7IyyV24YAxKp2Jqs3emZTuNnKxsah+uabKbMk7CbTgJx/zIgQYErIeTKRQ9yD9wxVof5YolPHqaWo7TD6tJlh7jQnK5z2n3+fGdggIOx2kaa2YI9QWarc5Ce1ipNWMKeSG4DysFF52KBmTNMmn5HqCFkwy34rDg05gDwgH3bBi+sgFhN/e8QvRn8kbamCOhgrZ9GJhFDgfcMHzFb6BAtjKpFhzTjwv1KCVuxHvCbsSiEz4CANnj84cwHdFXAbAOJ4LTSAawGWFn5tDhLMYz6nWeU2wJfIhmIJBefcd/A5FWQWGgrWzyORZ3Q6HuV+Jf0Bj+BTX69fm1zWgK7By1YTXchFDORywnfQ7GpzOo6S+qECrsx2ifVQAAAABJRU5ErkJggg==');
+  }
+
+  div.callout-tip.callout-style-default .callout-title {
+    background-color: #ccf1e3
+  }
+
+  div.callout-caution {
+    border-left-color: #fd7e14 !important;
+  }
+
+  div.callout-caution .callout-icon::before {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAIKADAAQAAAABAAAAIAAAAACshmLzAAACV0lEQVRYCdVWzWoUQRCuqp2ICBLJXgITZL1EfQDBW/bkzUMUD7klD+ATSHBEfAIfQO+iXsWDxJsHL96EHAwhgzlkg8nBg25XWb0zIb0zs9muYYWkoKeru+vn664fBqElyZNuyh167NXJ8Ut8McjbmEraKHkd7uAnAFku+VWdb3reSmRV8PKSLfZ0Gjn3a6Xlcq9YGb6tADjn+lUfTXtVmaZ1KwBIvFI11rRXlWlatwIAAv2asaa9mlB9wwygiDX26qaw1yYPzFXg2N1GgG0FMF8Oj+VIx7E/03lHx8UhvYyNZLN7BwSPgekXXLribw7w5/c8EF+DBK5idvDVYtEEwMeYefjjLAdEyQ3M9nfOkgnPTEkYU+sxMq0BxNR6jExrAI31H1rzvLEfRIdgcv1XEdj6QTQAS2wtstEALLG1yEZ3QhH6oDX7ExBSFEkFINXH98NTrme5IOaaA7kIfiu2L8A3qhH9zRbukdCqdsA98TdElyeMe5BI8Rs2xHRIsoTSSVFfCFCWGPn9XHb4cdobRIWABNf0add9jakDjQJpJ1bTXOJXnnRXHRf+dNL1ZV1MBRCXhMbaHqGI1JkKIL7+i8uffuP6wVQAzO7+qVEbF6NbS0LJureYcWXUUhH66nLR5rYmva+2tjRFtojkM2aD76HEGAD3tPtKM309FJg5j/K682ywcWJ3PASCcycH/22u+Bh7Aa0ehM2Fu4z0SAE81HF9RkB21c5bEn4Dzw+/qNOyXr3DCTQDMBOdhi4nAgiFDGCinIa2owCEChUwD8qzd03PG+qdW/4fDzjUMcE1ZpIAAAAASUVORK5CYII=');
+  }
+
+  div.callout-caution.callout-style-default .callout-title {
+    background-color: #ffe5d0
+  }
+
+  </style>
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" data-notes="Alright, in this session I’m going to introduce another technique that we can use to extract information from text data. Topic modelling is a type of statistical modeling that uses unsupervised Machine Learning to identify clusters or groups of similar words within a body of text." class="quarto-title-block center">
+  <h1 class="title">Session 4: Topic Modelling</h1>
+
+<div class="quarto-title-authors">
+</div>
+
+</section>
+<section id="where-does-this-fit-in" class="slide level2">
+<h2>Where does this fit in?</h2>
+
+<img data-src="figs/tmwr_0601.png" class="r-stretch"><aside class="notes">
+<p>explain figure</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="what-are-topic-models" class="slide level2">
+<h2>What are topic models?</h2>
+<ul>
+<li>Dictionary analyses are limited in that each word only has a single meaning (assumption)</li>
+<li>The meaning of words is dependent upon the context in which they are used.</li>
+<li>Unsupervised ML method to identify “topics” in text</li>
+<li>Each document is assigned a probability of belonging to a latent topic. (adjusted through iterative Bayesian techniques)</li>
+<li>Many forms: LDA, CTM, STM, etc.</li>
+</ul>
+<aside class="notes">
+<p>Topic modeling is a technique to identify hidden thematic patterns or topics within a collection of documents without any prior knowledge or supervision.</p>
+<p>Topic modeling is an unsupervised learning method, which means that it does not rely on labeled or pre-categorized data. It discovers patterns or topics based on the co-occurrence of words within the text data.</p>
+<p>At a high level, topic modeling assumes that each document in the dataset is a mixture of different topics, and each topic is characterized by a distribution of words. It aims to uncover this latent semantic structure by identifying the topics and their associated word distributions by relying on probabilistic models to assign topics to documents and estimate the word distributions for each topic.</p>
+<p>This allows documents to “overlap” each other in terms of content.</p>
+<p>So we say that a topic is made up of words and a document is made up of topics – sounds reasonable. We then assign each word a probability of belonging to a topic and each topic a probability of occurring in a document. The words most representative of a topic are used to qualitatively assign a label to the topic. That is, we take they top 10 or 15 words representative of a topic and use those, as the analyst, to label the topic.</p>
+<p>For the purposes of this workshop I am not going to go into the mathematics of the modelling - in your own time you can work through the tidytext mining book or some of the foundational papers here.</p>
+<p>The most commonly used probabilistic model for topic modeling is Latent Dirichlet Allocation (LDA) but there are many other common methods like correlated topic modelling or structural topic modelling that extend LDA and allow us to specify more detailed models, with a trade off that they are more intensive to train. In the final session today I’ll go into structural topic models as an extension of what I’ll cover in this session.</p>
+<p>A word of warning, if you have a relatively large dataset, it can take a long time to run a topic model – as in even with a relatively powerful computer it can take close to an hour to run. For most smallish datasets it will probably take between 30 seconds and a minute or two depending on your laptop to run. But for your model to be reliable, you generally need quite a bit of data so expect it to take a while to run.</p>
+<p>Topic modeling algorithms assign probabilities to words for each topic, allowing the identification of the most probable words associated with each topic. By examining these word distributions, users can interpret and label the discovered topics based on the prominent words within each topic.</p>
+<p>Essentially, topic modelling is a special form of unsupervised clustering analysis. While we don’t know what the topics are, as this is a clustering analysis, we need to tell our model how many topics there are, how many clusters to identify in the dataset.</p>
+<p>Determining the number of topics to extract from a text corpus is an important consideration in topic modeling. It requires finding a balance between having enough topics to capture the richness of the data and avoiding overfitting or excessive granularity. Researchers often experiment with different numbers of topics and evaluate the coherence and interpretability of the results.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="latent-dirichlet-allocation-lda" class="slide level2">
+<h2>Latent Dirichlet Allocation (LDA)</h2>
+
+<img data-src="figs/LDA.png" class="r-stretch quarto-figure-center"><aside class="notes">
+<p>Here is an example of topic modelling applied to a corpus of articles from the journal Science. This figure illustrates how a small chunk of text from a single document was classified via topic modelling. The colored figures on the left describe topics identified by the model, and the words in each box describe the most frequent words that appear in each topic. These words are also colored within the text in the middle of the picture, and the bar graph to the right describes the mixture of topics identified within this document.</p>
+<ul>
+<li><p>Every document is a mixture of topics. We imagine that each document may contain words from several topics in particular proportions. For example, in a two-topic model we could say “Document 1 is 90% topic A and 10% topic B, while Document 2 is 30% topic A and 70% topic B.”</p></li>
+<li><p>Every topic is a mixture of words. For example, we could imagine a two-topic model of American news, with one topic for “politics” and one for “entertainment.” The most common words in the politics topic might be “President”, “Congress”, and “government”, while the entertainment topic may be made up of words such as “movies”, “television”, and “actor”. Importantly, words can be shared between topics; a word like “budget” might appear in both equally.</p></li>
+</ul>
+<p>In essence we get two outcomes: beta and gamma.</p>
+<ul>
+<li><p>Beta indicates the probability that a word belongs to a topic. We typically use the top 10 to 15 words for a topic to characterise that topic. That’s all we get we get the 10-15 words that most characterise that topic. We then need to use our own intuition and those words to provide a qualitative label for that topic.</p></li>
+<li><p>Gamma indicates the probability that a topic belongs to a specific document so, for each topic, each document is given a probability. Typically a document might contain one or two topics which will have higher probabilities, while the rest all have much lower probabilities, almost zero.</p></li>
+</ul>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="lda-topic-modelling-in-r" class="slide level2">
+<h2>LDA topic modelling in R</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">library</span>(topicmodels)</span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="fu">library</span>(tm)</span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="fu">library</span>(tidytext)</span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-6"><a href="#cb1-6"></a></span>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="fu">data</span>(<span class="st">"AssociatedPress"</span>) <span class="co">#already a dtm</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a></span>
+<span id="cb1-9"><a href="#cb1-9"></a>AssociatedPress</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;&lt;DocumentTermMatrix (documents: 2246, terms: 10473)&gt;&gt;
+Non-/sparse entries: 302031/23220327
+Sparsity           : 99%
+Maximal term length: 18
+Weighting          : term frequency (tf)</code></pre>
+</div>
+</div>
+<aside class="notes">
+<p>In this session I’m going to use the topicmodels package to produce our topic models.</p>
+<p>The functions in this package take a Document-Term Matrix as input and produces a model that we can tidy so that we can manipulate and visualize the output using our tidyverse tools.</p>
+<p>Explain packages/data</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="lda-topic-modelling-in-r-1" class="slide level2">
+<h2>LDA topic modelling in R</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>ap_lda <span class="ot">&lt;-</span> <span class="fu">LDA</span>(AssociatedPress, <span class="at">k =</span> <span class="dv">5</span>, <span class="at">control =</span> <span class="fu">list</span>(<span class="at">seed =</span> <span class="dv">1234</span>))</span>
+<span id="cb3-2"><a href="#cb3-2"></a>ap_lda</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>A LDA_VEM topic model with 5 topics.</code></pre>
+</div>
+</div>
+<aside class="notes">
+<p>We can use the LDA() function from the topicmodels package, setting k = 5, to create a two-topic LDA model. What does k refer to? [explain]</p>
+<p>Almost any topic model in practice will use a larger k, but we will soon see that this analysis approach extends to a larger number of topics. [mention time to run]</p>
+<p>This function returns an object containing the full details of the model fit, such as how words are associated with topics and how topics are associated with documents. [output] Fitting the model was the “easy part”: the rest of the analysis will involve exploring and interpreting the model.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="word-topic-probabilities" class="slide level2">
+<h2>Word topic probabilities</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>ap_topics <span class="ot">&lt;-</span> <span class="fu">tidy</span>(ap_lda, <span class="at">matrix =</span> <span class="st">"beta"</span>)</span>
+<span id="cb5-2"><a href="#cb5-2"></a>ap_topics</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 52,365 × 3
+   topic term        beta
+   &lt;int&gt; &lt;chr&gt;      &lt;dbl&gt;
+ 1     1 aaron   2.80e- 5
+ 2     2 aaron   8.47e- 9
+ 3     3 aaron   3.74e-18
+ 4     4 aaron   7.37e- 5
+ 5     5 aaron   1.81e- 7
+ 6     1 abandon 2.59e- 5
+ 7     2 abandon 7.12e- 5
+ 8     3 abandon 4.75e- 5
+ 9     4 abandon 1.86e-24
+10     5 abandon 2.98e- 5
+# ℹ 52,355 more rows</code></pre>
+</div>
+</div>
+<aside class="notes">
+<p>Now we want to know what the topics actually are.. for that, we need to look at the word topic probabilities, or the beta, from the model. Here we can get the probabilities that a word is associated with a topic. So looking at the first word, Aaron we can see that the probability is much higher that it is associated with topic 1 than topic 3. But this not that useful looking at all 21,000 words. We want to know what the top words are for a given topic. This will help us understand what the topic cluster is about.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="word-topic-probabilities-1" class="slide level2">
+<h2>Word topic probabilities</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>ap_top_terms <span class="ot">&lt;-</span> ap_topics <span class="sc">|&gt;</span> </span>
+<span id="cb7-2"><a href="#cb7-2"></a>  <span class="fu">group_by</span>(topic) <span class="sc">|&gt;</span> </span>
+<span id="cb7-3"><a href="#cb7-3"></a>  <span class="fu">slice_max</span>(beta, <span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb7-4"><a href="#cb7-4"></a>  <span class="fu">ungroup</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb7-5"><a href="#cb7-5"></a>  <span class="fu">arrange</span>(topic, <span class="sc">-</span>beta)</span>
+<span id="cb7-6"><a href="#cb7-6"></a></span>
+<span id="cb7-7"><a href="#cb7-7"></a>ap_top_terms <span class="sc">|&gt;</span> </span>
+<span id="cb7-8"><a href="#cb7-8"></a>  <span class="fu">mutate</span>(<span class="at">term =</span> <span class="fu">reorder_within</span>(term, beta, topic)) <span class="sc">|&gt;</span> </span>
+<span id="cb7-9"><a href="#cb7-9"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(beta, term, <span class="at">fill =</span> <span class="fu">factor</span>(topic))) <span class="sc">+</span></span>
+<span id="cb7-10"><a href="#cb7-10"></a>  <span class="fu">geom_col</span>(<span class="at">show.legend =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb7-11"><a href="#cb7-11"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> topic, <span class="at">scales =</span> <span class="st">"free"</span>) <span class="sc">+</span></span>
+<span id="cb7-12"><a href="#cb7-12"></a>  <span class="fu">scale_y_reordered</span>() <span class="sc">+</span> <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+<aside class="notes">
+<p>Explain code</p>
+<p>Explain output</p>
+<p>Explain labelling process</p>
+<p>One important observation about the words in each topic is that some words, such as “new” and “people”, are common within both topics. This is an advantage of topic modeling as opposed to “hard clustering” methods: topics used in natural language could have some overlap in terms of words. [reading the tea leaves, interpretation, domain knowledge, labelling, context, etc. … ] [tf-idf should account for it, but can filter out very common words, or run the topic model just using nouns – Ill show this in a few minites]</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="word-topic-probabilities-1-output" class="slide level2 output-location-slide"><h2>Word topic probabilities</h2><div class="cell output-location-slide">
+<div class="cell-output-display">
+<p><img data-src="session_4_files/figure-revealjs/unnamed-chunk-4-1.png" width="960"></p>
+</div>
+</div></section><section id="document-topic-probabilities" class="slide level2">
+<h2>Document-topic probabilities</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>ap_documents <span class="ot">&lt;-</span> <span class="fu">tidy</span>(ap_lda, <span class="at">matrix =</span> <span class="st">"gamma"</span>)</span>
+<span id="cb8-2"><a href="#cb8-2"></a>ap_documents</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 11,230 × 3
+   document topic    gamma
+      &lt;int&gt; &lt;int&gt;    &lt;dbl&gt;
+ 1        1     1 0.000293
+ 2        2     1 0.216   
+ 3        3     1 0.000302
+ 4        4     1 0.000372
+ 5        5     1 0.00116 
+ 6        6     1 0.000183
+ 7        7     1 0.728   
+ 8        8     1 0.0547  
+ 9        9     1 0.253   
+10       10     1 0.0676  
+# ℹ 11,220 more rows</code></pre>
+</div>
+</div>
+<aside class="notes">
+<p>Once you’ve labelled each topic and given it a name and descrption, something we often want to do is then tag the documents with the topics.. essentially what is the topic of each document. Depending on the data we might decide that each document is about a single topic… typically we’ll do this if the documents are short – like a single tweet or comment… but if the documents are longer we might decide that each document can contain 2 or 3 topics. We can examine the per-document-per-topic probabilities, called “gamma”, with the matrix = “gamma” argument. Each of these values is an estimated proportion of words from that document that are generated from that topic. For example, the model estimates that only about 25% of the words in document 9 were generated from topic 1. We can see that many of these documents were drawn from a mix of the two topics, but that document 7 was drawn almost entirely from topic 1, having a gamma from topic 1 close to 1. On the flip side we can see that document 6 barely has any topic 1.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="document-topic-probabilities-visualised" class="slide level2">
+<h2>Document-topic probabilities visualised</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>ap_documents <span class="sc">|&gt;</span> </span>
+<span id="cb10-2"><a href="#cb10-2"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(gamma, <span class="at">fill =</span> <span class="fu">as.factor</span>(topic))) <span class="sc">+</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a>  <span class="fu">geom_histogram</span>(<span class="at">alpha =</span> <span class="fl">0.8</span>, <span class="at">show.legend =</span> <span class="cn">FALSE</span>, <span class="at">bins =</span> <span class="dv">20</span>) <span class="sc">+</span></span>
+<span id="cb10-4"><a href="#cb10-4"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> topic, <span class="at">ncol =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
+<span id="cb10-5"><a href="#cb10-5"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Distribution of probability for each topic"</span>,</span>
+<span id="cb10-6"><a href="#cb10-6"></a>       <span class="at">y =</span> <span class="st">"Number of documents"</span>, <span class="at">x =</span> <span class="fu">expression</span>(gamma))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+<aside class="notes">
+<p>We can visualise this to better understand the distribution of documents to topics.</p>
+<p>Explain code and output</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="document-topic-probabilities-visualised-output" class="slide level2 output-location-slide"><h2>Document-topic probabilities visualised</h2><div class="cell output-location-slide">
+<div class="cell-output-display">
+<p><img data-src="session_4_files/figure-revealjs/unnamed-chunk-6-1.png" width="960"></p>
+</div>
+</div></section><section id="identify-the-topics-most-associated-with-a-document" class="slide level2">
+<h2>Identify the topics most associated with a document</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>ap_documents_topics <span class="ot">&lt;-</span> ap_documents <span class="sc">|&gt;</span>  </span>
+<span id="cb11-2"><a href="#cb11-2"></a>  <span class="fu">group_by</span>(document) <span class="sc">|&gt;</span>  </span>
+<span id="cb11-3"><a href="#cb11-3"></a>  <span class="fu">slice_max</span>(gamma, <span class="at">n =</span> <span class="dv">2</span>) <span class="sc">%&gt;%</span> <span class="co">#specify 1, 2, 3, n for the number of topics associated with a document</span></span>
+<span id="cb11-4"><a href="#cb11-4"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb11-5"><a href="#cb11-5"></a></span>
+<span id="cb11-6"><a href="#cb11-6"></a>ap_documents_topics</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4,492 × 3
+   document topic    gamma
+      &lt;int&gt; &lt;int&gt;    &lt;dbl&gt;
+ 1        1     4 0.999   
+ 2        1     5 0.000293
+ 3        2     2 0.529   
+ 4        2     1 0.216   
+ 5        3     4 0.999   
+ 6        3     5 0.000302
+ 7        4     4 0.518   
+ 8        4     2 0.316   
+ 9        5     4 0.995   
+10        5     1 0.00116 
+# ℹ 4,482 more rows</code></pre>
+</div>
+</div>
+<aside class="notes">
+<p>now that we’ve inspected this distribution we need to assign topics to documents.</p>
+<p>Explain code</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="descriptive-statistics-for-gamma" class="slide level2">
+<h2>Descriptive statistics for gamma</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>ap_documents_topics <span class="sc">|&gt;</span>  </span>
+<span id="cb13-2"><a href="#cb13-2"></a>  <span class="fu">summarise</span>(<span class="at">mean =</span> <span class="fu">mean</span>(gamma),</span>
+<span id="cb13-3"><a href="#cb13-3"></a>            <span class="at">sd =</span> <span class="fu">sd</span>(gamma),</span>
+<span id="cb13-4"><a href="#cb13-4"></a>            <span class="at">min =</span> <span class="fu">min</span>(gamma),</span>
+<span id="cb13-5"><a href="#cb13-5"></a>            <span class="at">max =</span> <span class="fu">max</span>(gamma))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 4
+   mean    sd      min   max
+  &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;
+1 0.476 0.330 0.000130 0.999</code></pre>
+</div>
+</div>
+<aside class="notes">
+<p>We can then look at some descriptive statistics to understand whether 2 topics per document was a good choice.</p>
+<p>Explain code and output</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="filter-for-a-higher-gamma-value" class="slide level2">
+<h2>Filter for a higher gamma value</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a>ap_documents_topics <span class="ot">&lt;-</span> ap_documents_topics <span class="sc">|&gt;</span>  </span>
+<span id="cb15-2"><a href="#cb15-2"></a>  <span class="fu">filter</span>(gamma <span class="sc">&gt;</span> <span class="fl">0.4</span>)</span>
+<span id="cb15-3"><a href="#cb15-3"></a></span>
+<span id="cb15-4"><a href="#cb15-4"></a>ap_documents_topics <span class="sc">|&gt;</span>  </span>
+<span id="cb15-5"><a href="#cb15-5"></a>  <span class="fu">summarise</span>(<span class="at">mean =</span> <span class="fu">mean</span>(gamma),</span>
+<span id="cb15-6"><a href="#cb15-6"></a>            <span class="at">sd =</span> <span class="fu">sd</span>(gamma),</span>
+<span id="cb15-7"><a href="#cb15-7"></a>            <span class="at">min =</span> <span class="fu">min</span>(gamma),</span>
+<span id="cb15-8"><a href="#cb15-8"></a>            <span class="at">max =</span> <span class="fu">max</span>(gamma))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 4
+   mean    sd   min   max
+  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+1 0.737 0.199 0.400 0.999</code></pre>
+</div>
+</div>
+<aside class="notes">
+<p>Here, I’ve set a threshold at 0.4 for gamma - this value will depend on your study and is not fixed. Here I’m essentially saying documents can have up to 2 topics, but the minimum topic prevalence in a document will be 40%. This means that some documents will have two topics, some will have 1 topic and if document is truly a mixture of topics, with no single topic accounting for more than 40% of the terms, then the document will be filtered out of our final analysis.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="how-many-documents-for-each-topic" class="slide level2">
+<h2>How many documents for each topic?</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a>ap_documents_topics <span class="sc">|&gt;</span>  </span>
+<span id="cb17-2"><a href="#cb17-2"></a>  <span class="fu">group_by</span>(topic) <span class="sc">|&gt;</span>  </span>
+<span id="cb17-3"><a href="#cb17-3"></a>  <span class="fu">tally</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 2
+  topic     n
+  &lt;int&gt; &lt;int&gt;
+1     1   358
+2     2   523
+3     3   330
+4     4   703
+5     5   506</code></pre>
+</div>
+</div>
+<aside class="notes">
+<p>So here we can see the number of documents for each of the five topic clusters.</p>
+<p>describe code and output</p>
+<p>Of course in any analysis we won’t use the topic numbers, we’ll use the qualitative labels that we’ve assigned to each topic number. These labels can then be treated as any other categorical variable in our analysis. We can qualitative describe the nature of the topics, if we have another variable with a timestamp or a date we can analyse how topics are used over time or if we have some other outcome variables, maybe sentiment scores, number of up or down votes, or the number of likes or reactions that a document has, we can then analyse the effect of topic category on these variables.</p>
+<p>And that’s essentially the gist of topic modelling. There are many alternatives to LDA and many alternative ways of doing this but this general pattern captures the core features. We have found a way to to identify the core topic or essence of a document – be it a chapter, a tweet, a set of tweets, whatever. Now that is the basics, I want to spend the next few minutes and touch on some more advanced topic modelling topics before the practical session after the break.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="what-is-the-optimal-value-of-k" class="slide level2">
+<h2>What is the optimal value of <em>k</em>?</h2>
+<ul>
+<li><p>There is no definitive answer, as topics in topic modelling are generative</p></li>
+<li><p>More topics = fine-grained analysis</p>
+<ul>
+<li><p>Pros: able to capture more nuanced patterns in the data</p></li>
+<li><p>Cons: lack of focus, topics to to be redundant and duplicate</p></li>
+</ul></li>
+<li><p>Fewer topics = course analysis</p>
+<ul>
+<li><p>Pros: able to capture “broad strokes” (e.g., recurring themes in news)</p></li>
+<li><p>Cons: lack of detail, lack of nuance</p></li>
+</ul></li>
+</ul>
+<aside class="notes">
+<p>Given that topic modelling is in essence a specialised form of clustering, the main parameter that we can tune in topic modelling is the number of topics - k. (read slide)</p>
+<p>To help us choose a value for k, like with clustering analyses, we can consider teh convergence of various metrics. For LDA topic models we can use the ldatuning package to determine the optimal value of k by considering various metrics for different topic numbers.</p>
+<p>Now this can take quite a long time to run depending on the parameters that you choose.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="ldatuning" class="slide level2">
+<h2>ldatuning</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="fu">library</span>(ldatuning)</span>
+<span id="cb19-2"><a href="#cb19-2"></a></span>
+<span id="cb19-3"><a href="#cb19-3"></a>result <span class="ot">&lt;-</span> <span class="fu">FindTopicsNumber</span>(</span>
+<span id="cb19-4"><a href="#cb19-4"></a>  AssociatedPress, <span class="co"># our dtm</span></span>
+<span id="cb19-5"><a href="#cb19-5"></a>  <span class="at">topics =</span> <span class="fu">seq</span>(<span class="at">from =</span> <span class="dv">2</span>, <span class="at">to =</span> <span class="dv">10</span>, <span class="at">by =</span> <span class="dv">1</span>),</span>
+<span id="cb19-6"><a href="#cb19-6"></a>  <span class="at">metrics =</span> <span class="fu">c</span>(<span class="st">"Griffiths2004"</span>, <span class="st">"CaoJuan2009"</span>, <span class="st">"Arun2010"</span>, <span class="st">"Deveaud2014"</span>),</span>
+<span id="cb19-7"><a href="#cb19-7"></a>  <span class="at">method =</span> <span class="st">"Gibbs"</span>,</span>
+<span id="cb19-8"><a href="#cb19-8"></a>  <span class="at">control =</span> <span class="fu">list</span>(<span class="at">seed =</span> <span class="dv">42</span>),</span>
+<span id="cb19-9"><a href="#cb19-9"></a>  <span class="at">mc.cores =</span> 6L, <span class="co">#number of cores to use, adjust based on your machine</span></span>
+<span id="cb19-10"><a href="#cb19-10"></a>  <span class="at">verbose =</span> <span class="cn">TRUE</span></span>
+<span id="cb19-11"><a href="#cb19-11"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>fit models... done.
+calculate metrics:
+  Griffiths2004... done.
+  CaoJuan2009... done.
+  Arun2010... done.
+  Deveaud2014... done.</code></pre>
+</div>
+</div>
+</section>
+<section id="inspect-the-output" class="slide level2">
+<h2>Inspect the output</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="fu">FindTopicsNumber_plot</span>(result)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+</div>
+<img data-src="session_4_files/figure-revealjs/unnamed-chunk-12-1.png" width="960" class="r-stretch"></section>
+<section id="alternative-processing-method-using-udpipe" class="slide level2">
+<h2>Alternative processing method using UDPipe</h2>
+<ul>
+<li>language-agnostic</li>
+<li>tokenisation, parts-of-speech tagging</li>
+<li>lemmatization</li>
+<li>wrapper for UDPipe C++ library</li>
+</ul>
+<aside class="notes">
+<p>UDPipe provides language-agnostic tokenization, tagging, and lemmatization functions. The uppipe package in R is essentially a wrapper for the UDPipe C++ library so it’s relatively fast at what it does but if your data is large it can still take a long time to run. The package can be used for a number of tagging and annotation tasks but for our purposes it allows us to tag particular parts of speech and filter to only those that we want to use in our analysis.</p>
+<p>Some research indicates that topic modelling tends to work better focusing only on nouns, but this will heavily depends on your research question. i’ve just been working on a project in which we’ve specifically been interested in the actions that people take so in our case including nouns, verbs, and adjectives in our analysis makes sense, but udpipe helped us to filter out all other types of terms.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="setup-data" class="slide level2">
+<h2>setup data</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="fu">library</span>(udpipe)</span>
+<span id="cb22-2"><a href="#cb22-2"></a><span class="fu">library</span>(janeaustenr)</span>
+<span id="cb22-3"><a href="#cb22-3"></a></span>
+<span id="cb22-4"><a href="#cb22-4"></a>all_books <span class="ot">&lt;-</span> <span class="fu">austen_books</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb22-5"><a href="#cb22-5"></a>  <span class="fu">group_by</span>(book) <span class="sc">|&gt;</span> </span>
+<span id="cb22-6"><a href="#cb22-6"></a>  <span class="fu">mutate</span>(<span class="at">linenumber =</span> <span class="fu">row_number</span>(),</span>
+<span id="cb22-7"><a href="#cb22-7"></a>         <span class="at">chapter =</span> <span class="fu">cumsum</span>(<span class="fu">str_detect</span>(text, </span>
+<span id="cb22-8"><a href="#cb22-8"></a>                                     <span class="fu">regex</span>(<span class="st">"^chapter [</span><span class="sc">\\</span><span class="st">divxlc]"</span>,</span>
+<span id="cb22-9"><a href="#cb22-9"></a>                                           <span class="at">ignore_case =</span> <span class="cn">TRUE</span>)))) <span class="sc">|&gt;</span> </span>
+<span id="cb22-10"><a href="#cb22-10"></a>  <span class="fu">ungroup</span>() </span>
+<span id="cb22-11"><a href="#cb22-11"></a></span>
+<span id="cb22-12"><a href="#cb22-12"></a>all_books <span class="ot">&lt;-</span> all_books <span class="sc">|&gt;</span>  </span>
+<span id="cb22-13"><a href="#cb22-13"></a>  <span class="fu">group_by</span>(book, chapter) <span class="sc">|&gt;</span> </span>
+<span id="cb22-14"><a href="#cb22-14"></a>  <span class="fu">summarise_at</span>(<span class="fu">vars</span>(<span class="sc">-</span><span class="fu">group_cols</span>()),  str_c, <span class="at">collapse=</span><span class="st">" "</span>) <span class="sc">|&gt;</span>  </span>
+<span id="cb22-15"><a href="#cb22-15"></a>  <span class="fu">filter</span>(chapter <span class="sc">!=</span> <span class="dv">0</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb22-16"><a href="#cb22-16"></a>  <span class="fu">select</span>(<span class="sc">-</span>linenumber) <span class="sc">|&gt;</span>  </span>
+<span id="cb22-17"><a href="#cb22-17"></a>  <span class="fu">mutate</span>(<span class="at">id =</span> <span class="fu">paste</span>(<span class="fu">as.character</span>(book), <span class="fu">as.character</span>(chapter)))</span>
+<span id="cb22-18"><a href="#cb22-18"></a>all_books</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+<aside class="notes">
+<p>Here I’m importing the udpipe package and using the jane austen dataset from our session this morning. I’m just cleaning up the data so the text for each chapter forms its own document.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="setup-data-output" class="slide level2 output-location-slide"><h2>setup data</h2><div class="cell output-location-slide">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 269 × 4
+# Groups:   book [6]
+   book                chapter text                                        id   
+   &lt;fct&gt;                 &lt;int&gt; &lt;chr&gt;                                       &lt;chr&gt;
+ 1 Sense &amp; Sensibility       1 "CHAPTER 1   The family of Dashwood had lo… Sens…
+ 2 Sense &amp; Sensibility       2 "CHAPTER 2   Mrs. John Dashwood now instal… Sens…
+ 3 Sense &amp; Sensibility       3 "CHAPTER 3   Mrs. Dashwood remained at Nor… Sens…
+ 4 Sense &amp; Sensibility       4 "CHAPTER 4   \"What a pity it is, Elinor,\… Sens…
+ 5 Sense &amp; Sensibility       5 "CHAPTER 5   No sooner was her answer disp… Sens…
+ 6 Sense &amp; Sensibility       6 "CHAPTER 6   The first part of their journ… Sens…
+ 7 Sense &amp; Sensibility       7 "CHAPTER 7   Barton Park was about half a … Sens…
+ 8 Sense &amp; Sensibility       8 "CHAPTER 8   Mrs. Jennings was a widow wit… Sens…
+ 9 Sense &amp; Sensibility       9 "CHAPTER 9   The Dashwoods were now settle… Sens…
+10 Sense &amp; Sensibility      10 "CHAPTER 10   Marianne's preserver, as Mar… Sens…
+# ℹ 259 more rows</code></pre>
+</div>
+</div></section><section id="using-udpipe-in-r" class="slide level2">
+<h2>Using Udpipe in R</h2>
+<ul>
+<li>Load the English language model with udpipe</li>
+<li>can download other languages: <code>udpipe_download_model</code></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource r code-overflow-wrap number-lines code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a>english_language_model <span class="ot">&lt;-</span> <span class="fu">udpipe_load_model</span>(<span class="at">file =</span> <span class="st">"english-ewt-ud-2.5-191206.udpipe"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<aside class="notes">
+<p>Udpipe requires a language model to perform its annotation. Here I’m working with English, but its compatible with around a hundred different languages. These need to be download first and then you point udpipe to the location of the model. In this case I have an English language model in the directory and I load it with udpipe.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="using-udpipe-in-r-1" class="slide level2">
+<h2>Using Udpipe in R</h2>
+<p><em>This might take about 10 minutes to run</em></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a>data_tokenised <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">udpipe_annotate</span>(english_language_model,</span>
+<span id="cb25-2"><a href="#cb25-2"></a>                                                             <span class="at">x=</span>all_books<span class="sc">$</span>text,</span>
+<span id="cb25-3"><a href="#cb25-3"></a>                                                             <span class="at">doc_id =</span> all_books<span class="sc">$</span>id,</span>
+<span id="cb25-4"><a href="#cb25-4"></a>                                                             <span class="at">tokenizer =</span> <span class="st">"tokenizer"</span>,</span>
+<span id="cb25-5"><a href="#cb25-5"></a>                                                             <span class="at">tagger =</span> <span class="fu">c</span>(<span class="st">"default"</span>, <span class="st">"none"</span>),</span>
+<span id="cb25-6"><a href="#cb25-6"></a>                                                             <span class="at">parser =</span> <span class="st">"none"</span>,</span>
+<span id="cb25-7"><a href="#cb25-7"></a>                                                             <span class="at">trace=</span><span class="cn">FALSE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<aside class="notes">
+<p>Now here I am using udpipe_annotate to annotate and tokenise the text that I’m passing to it and store the output as a dataframe. Depending on the size of your dataset this can take quite a long time to run. With this dataset, this takes about 10 minutes to run.</p>
+<p>You can speed this operation up by running the annotation in parallel across different cores on your machine, but going into that is beyond the scope of this session. But just be aware that this can take a while to run.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="filter-to-the-data-that-we-want" class="slide level2">
+<h2>Filter to the data that we want</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a>data_tokenised <span class="ot">&lt;-</span> data_tokenised <span class="sc">%&gt;%</span> </span>
+<span id="cb26-2"><a href="#cb26-2"></a>  <span class="fu">filter</span>(xpos <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"NN"</span>, <span class="st">"NNS"</span>, <span class="st">"NNPS"</span>, <span class="st">"NNP"</span>)) <span class="sc">%&gt;%</span>   </span>
+<span id="cb26-3"><a href="#cb26-3"></a>  <span class="fu">filter</span>(<span class="fu">str_length</span>(lemma) <span class="sc">&gt;</span><span class="dv">3</span>) <span class="sc">%&gt;%</span>  </span>
+<span id="cb26-4"><a href="#cb26-4"></a>  <span class="fu">select</span>(doc_id, sentence_id, sentence, token, lemma, xpos)</span>
+<span id="cb26-5"><a href="#cb26-5"></a></span>
+<span id="cb26-6"><a href="#cb26-6"></a><span class="fu">head</span>(data_tokenised)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+<aside class="notes">
+<p>Once we’ve tagged the parts of speech we can select only those that we want to focus on… research has demonstrated that topic modelling generally works best if we only use nouns and I’m also going to filter out short words that are 3 characters or less. [explain code]</p>
+<p>Retain words tagged with NN (noun, singular or mass), NNS (noun, plural), NNP (proper noun, singular), NNPS (proper noun, plural).</p>
+<p>Remove words shorter than 4 characters</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="filter-to-the-data-that-we-want-output" class="slide level2 output-location-slide"><h2>Filter to the data that we want</h2><div class="cell output-location-slide">
+<div class="cell-output cell-output-stdout">
+<pre><code>                 doc_id sentence_id
+1 Sense &amp; Sensibility 1           1
+2 Sense &amp; Sensibility 1           1
+3 Sense &amp; Sensibility 1           1
+4 Sense &amp; Sensibility 1           1
+5 Sense &amp; Sensibility 1           2
+6 Sense &amp; Sensibility 1           2
+                                                                                                                                                                                                                                           sentence
+1                                                                                                                                                                                 CHAPTER 1 The family of Dashwood had long been settled in Sussex.
+2                                                                                                                                                                                 CHAPTER 1 The family of Dashwood had long been settled in Sussex.
+3                                                                                                                                                                                 CHAPTER 1 The family of Dashwood had long been settled in Sussex.
+4                                                                                                                                                                                 CHAPTER 1 The family of Dashwood had long been settled in Sussex.
+5 Their estate was large, and their residence was at Norland Park, in the centre of their property, where, for many generations, they had lived in so respectable a manner as to engage the general good opinion of their surrounding acquaintance.
+6 Their estate was large, and their residence was at Norland Park, in the centre of their property, where, for many generations, they had lived in so respectable a manner as to engage the general good opinion of their surrounding acquaintance.
+      token     lemma xpos
+1   CHAPTER   chapter   NN
+2    family    family   NN
+3  Dashwood  Dashwood  NNP
+4    Sussex    sussex  NNP
+5    estate    estate   NN
+6 residence residence   NN</code></pre>
+</div>
+</div></section><section id="topic-modelling-with-the-reduced-dataset" class="slide level2">
+<h2>Topic modelling with the reduced dataset</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a>data_tokenised <span class="ot">&lt;-</span> data_tokenised <span class="sc">%&gt;%</span> </span>
+<span id="cb28-2"><a href="#cb28-2"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">grepl</span>(<span class="st">"[[:digit:]]"</span>, lemma))</span>
+<span id="cb28-3"><a href="#cb28-3"></a></span>
+<span id="cb28-4"><a href="#cb28-4"></a>data_words<span class="ot">&lt;-</span> data_tokenised <span class="sc">%&gt;%</span> </span>
+<span id="cb28-5"><a href="#cb28-5"></a>  <span class="fu">count</span>(doc_id, lemma, <span class="at">sort=</span><span class="cn">TRUE</span>)</span>
+<span id="cb28-6"><a href="#cb28-6"></a></span>
+<span id="cb28-7"><a href="#cb28-7"></a>data_tf_idf <span class="ot">&lt;-</span> data_words <span class="sc">%&gt;%</span> </span>
+<span id="cb28-8"><a href="#cb28-8"></a>  <span class="fu">bind_tf_idf</span>(lemma, doc_id, n)</span>
+<span id="cb28-9"><a href="#cb28-9"></a></span>
+<span id="cb28-10"><a href="#cb28-10"></a>data_dtm <span class="ot">&lt;-</span> data_tf_idf <span class="sc">%&gt;%</span> </span>
+<span id="cb28-11"><a href="#cb28-11"></a>  <span class="fu">cast_dtm</span>(doc_id, lemma, n)</span>
+<span id="cb28-12"><a href="#cb28-12"></a></span>
+<span id="cb28-13"><a href="#cb28-13"></a>data_lda <span class="ot">&lt;-</span> <span class="fu">LDA</span>(data_dtm, <span class="at">k =</span> <span class="dv">10</span>, <span class="at">control =</span> <span class="fu">list</span>(<span class="at">seed =</span> <span class="dv">1234</span>))</span>
+<span id="cb28-14"><a href="#cb28-14"></a></span>
+<span id="cb28-15"><a href="#cb28-15"></a>data_topics <span class="ot">&lt;-</span> <span class="fu">tidy</span>(data_lda, <span class="at">matrix =</span> <span class="st">"beta"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<aside class="notes">
+<p>Now I can go through the usual prep, remove numbers, calculate the tf idf for my dataframe and then cast it to a document term matrix.. and from here I can then run LDA as normal but normally these extra processing steps will yield superior results.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="topic-modelling-with-the-reduced-dataset-1" class="slide level2">
+<h2>Topic modelling with the reduced dataset</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a>data_topics <span class="sc">%&gt;%</span></span>
+<span id="cb29-2"><a href="#cb29-2"></a>  <span class="fu">group_by</span>(topic) <span class="sc">%&gt;%</span></span>
+<span id="cb29-3"><a href="#cb29-3"></a>  <span class="fu">slice_max</span>(beta, <span class="at">n =</span> <span class="dv">10</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb29-4"><a href="#cb29-4"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb29-5"><a href="#cb29-5"></a>  <span class="fu">arrange</span>(topic, <span class="sc">-</span>beta) <span class="sc">%&gt;%</span> </span>
+<span id="cb29-6"><a href="#cb29-6"></a>  <span class="fu">mutate</span>(<span class="at">term =</span> <span class="fu">reorder_within</span>(term, beta, topic)) <span class="sc">%&gt;%</span></span>
+<span id="cb29-7"><a href="#cb29-7"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(beta, term, </span>
+<span id="cb29-8"><a href="#cb29-8"></a>             <span class="at">fill =</span> <span class="fu">factor</span>(topic))) <span class="sc">+</span></span>
+<span id="cb29-9"><a href="#cb29-9"></a>  <span class="fu">geom_col</span>(<span class="at">show.legend =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb29-10"><a href="#cb29-10"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> topic, </span>
+<span id="cb29-11"><a href="#cb29-11"></a>             <span class="at">scales =</span> <span class="st">"free"</span>) <span class="sc">+</span> <span class="co">#set ncol = 4 if more topics</span></span>
+<span id="cb29-12"><a href="#cb29-12"></a>  <span class="fu">scale_y_reordered</span>() <span class="sc">+</span> </span>
+<span id="cb29-13"><a href="#cb29-13"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Top 10 terms in each CTM topic"</span>,</span>
+<span id="cb29-14"><a href="#cb29-14"></a>       <span class="at">x =</span> <span class="fu">expression</span>(beta), <span class="at">y =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb29-15"><a href="#cb29-15"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+</section>
+<section id="topic-modelling-with-the-reduced-dataset-1-output" class="slide level2 output-location-slide"><h2>Topic modelling with the reduced dataset</h2><div class="cell output-location-slide">
+<div class="cell-output-display">
+<p><img data-src="session_4_files/figure-revealjs/unnamed-chunk-18-1.png" width="960"></p>
+</div>
+</div></section><section id="alternatives-to-lda" class="slide level2">
+<h2>Alternatives to LDA</h2>
+<ul>
+<li>Correlated topic modelling (CTM)</li>
+<li>Structural topic modelling (STM) (will discuss later)</li>
+</ul>
+<aside class="notes">
+<p>LDA is not the only approach to topic modelling. To wrap up this session I’ll briefly discuss correlated topic models and then in our final session this afternoon I’ll spend more time on structural topic models as they require a different coding approach.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="ctm" class="slide level2">
+<h2>CTM</h2>
+<ul>
+<li>Extends LDA</li>
+<li>Topics can be correlated with each other</li>
+<li>can take longer to run as it is more computationally intensive</li>
+</ul>
+<aside class="notes">
+<p>The CTM extends the LDA model by relaxing the independence assumption of LDA. As in the LDA model, CTM is a mixture model and documents belong to a mixture of topics. CTM uses the same methodological approach as LDA, but it creates a more flexible modeling approach than LDA by replacing the Dirichlet distribution with a logistic normal distribution and explicitly incorporating a covariance structure among topics . Essentially this means that it allows for the topics to be correlated with eachother – an assumption that many argue is probably more realistic than the traditional LDA approach. This does, however, come at a trade-off, CTM is much more computational expensive than LDA but in many cases it outperforms LDA.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="running-ctms-in-r" class="slide level2">
+<h2>Running CTMs in R</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a>data_ctm <span class="ot">&lt;-</span><span class="fu">CTM</span>(data_dtm, </span>
+<span id="cb30-2"><a href="#cb30-2"></a>               <span class="at">k =</span> <span class="dv">10</span>, </span>
+<span id="cb30-3"><a href="#cb30-3"></a>               <span class="at">method =</span> <span class="st">"VEM"</span>, </span>
+<span id="cb30-4"><a href="#cb30-4"></a>               <span class="at">control =</span> <span class="fu">list</span>(<span class="at">seed =</span> <span class="dv">1234</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) 
+warning: cg didn't converge (lambda) </code></pre>
+</div>
+</div>
+<aside class="notes">
+<p>Explain code</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="running-ctms-in-r-1" class="slide level2">
+<h2>Running CTMs in R</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a>data_ctm_topics <span class="ot">&lt;-</span> <span class="fu">tidy</span>(data_ctm, <span class="at">matrix =</span> <span class="st">"beta"</span>)</span>
+<span id="cb32-2"><a href="#cb32-2"></a></span>
+<span id="cb32-3"><a href="#cb32-3"></a>data_ctm_topics <span class="sc">%&gt;%</span></span>
+<span id="cb32-4"><a href="#cb32-4"></a>  <span class="fu">group_by</span>(topic) <span class="sc">%&gt;%</span></span>
+<span id="cb32-5"><a href="#cb32-5"></a>  <span class="fu">slice_max</span>(beta, <span class="at">n =</span> <span class="dv">10</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb32-6"><a href="#cb32-6"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb32-7"><a href="#cb32-7"></a>  <span class="fu">arrange</span>(topic, <span class="sc">-</span>beta) <span class="sc">%&gt;%</span></span>
+<span id="cb32-8"><a href="#cb32-8"></a>  <span class="fu">mutate</span>(<span class="at">term =</span> <span class="fu">reorder_within</span>(term, beta, topic)) <span class="sc">%&gt;%</span></span>
+<span id="cb32-9"><a href="#cb32-9"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(beta, term,</span>
+<span id="cb32-10"><a href="#cb32-10"></a>             <span class="at">fill =</span> <span class="fu">factor</span>(topic))) <span class="sc">+</span></span>
+<span id="cb32-11"><a href="#cb32-11"></a>  <span class="fu">geom_col</span>(<span class="at">show.legend =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb32-12"><a href="#cb32-12"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> topic,</span>
+<span id="cb32-13"><a href="#cb32-13"></a>             <span class="at">scales =</span> <span class="st">"free"</span>) <span class="sc">+</span> <span class="co">#set ncol = 4 if more topics</span></span>
+<span id="cb32-14"><a href="#cb32-14"></a>  <span class="fu">scale_y_reordered</span>() <span class="sc">+</span></span>
+<span id="cb32-15"><a href="#cb32-15"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Top 10 terms in each CTM topic"</span>,</span>
+<span id="cb32-16"><a href="#cb32-16"></a>       <span class="at">x =</span> <span class="fu">expression</span>(beta), <span class="at">y =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb32-17"><a href="#cb32-17"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+</section>
+<section id="running-ctms-in-r-1-output" class="slide level2 output-location-slide"><h2>Running CTMs in R</h2><div class="cell output-location-slide">
+<div class="cell-output-display">
+<p><img data-src="session_4_files/figure-revealjs/unnamed-chunk-20-1.png" width="960"></p>
+</div>
+</div></section><section id="limitations-of-topic-models" class="slide level2">
+<h2>Limitations of topic models</h2>
+<div style="font-size: 50%;">
+<div class="columns">
+<div class="column" style="width:40%;">
+<ul>
+<li>Ambiguity around the definition of a topic (cluster)</li>
+<li>Not objective
+<ul>
+<li>A tool for identifying trends</li>
+<li>Need further analysis</li>
+</ul></li>
+<li>No substitute for human interpretation</li>
+<li>Reading the tea leaves</li>
+</ul>
+</div><div class="column" style="width:60%;">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="figs/tea_leaves.jpg"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<aside class="notes">
+<p>Alright, I think that’s where I’ll leave you with topic modelling. I want to conclude my considering a few of the benefits and drawbacks of this technique.</p>
+<p>Topic models have become a standard tool within quantitative text analysis for many different reasons. Topic models can be much more useful than simple word frequency or dictionary based approaches depending upon the use case. Topic models tend to produce the best results when applied to texts that are not too short (such as tweets), and those that have a consistent structure.</p>
+<p>At the same time, topic models have a number of important limitations. To begin, the term “topic” is somewhat ambigious, and by now it is perhaps clear that topic models will not produce highly nuanced classification of texts.</p>
+<p>Topic models have a number of limitations. To begin, the term “topic” is somewhat ambigious. Second, topic models can easily be abused if they are wrongly understood as an objective representation of the meaning of a text. One of the pioneers in topic modeling, describe the method as a “tool for reading.” By this he meant that topic modeling does not reveal the “true” meaning of documents within a corpus, but is instead a powerful tool for identifying general trends in a corpus that can then be analyzed in a more granular manner using other techniques. Topic models are no substitute for human interpretation of a text—instead, they are a way of making educated guesses about how words cohere into different latent themes by identifying patterns in the way they co-occur within documents.</p>
+<p>After the break I have a few topic modelling exercises and then in the final session I’m going to discuss structural topic models and wrap up.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+<div class="footer footer-default">
+
+</div>
+</section>
+    </div>
+  </div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="session_4_files/libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="session_4_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="session_4_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="session_4_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="session_4_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="session_4_files/libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="session_4_files/libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="session_4_files/libs/revealjs/plugin/search/search.js"></script>
+  <script src="session_4_files/libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="session_4_files/libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': false,
+'smaller': false,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'print',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'none',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1050,
+
+        height: 700,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 0.1,
+
+        math: {
+          mathjax: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    
+    <script>
+      // htmlwidgets need to know to resize themselves when slides are shown/hidden.
+      // Fire the "slideenter" event (handled by htmlwidgets.js) when the current
+      // slide changes (different for each slide format).
+      (function () {
+        // dispatch for htmlwidgets
+        function fireSlideEnter() {
+          const event = window.document.createEvent("Event");
+          event.initEvent("slideenter", true, true);
+          window.document.dispatchEvent(event);
+        }
+
+        function fireSlideChanged(previousSlide, currentSlide) {
+          fireSlideEnter();
+
+          // dispatch for shiny
+          if (window.jQuery) {
+            if (previousSlide) {
+              window.jQuery(previousSlide).trigger("hidden");
+            }
+            if (currentSlide) {
+              window.jQuery(currentSlide).trigger("shown");
+            }
+          }
+        }
+
+        // hookup for slidy
+        if (window.w3c_slidy) {
+          window.w3c_slidy.add_observer(function (slide_num) {
+            // slide_num starts at position 1
+            fireSlideChanged(null, w3c_slidy.slides[slide_num - 1]);
+          });
+        }
+
+      })();
+    </script>
+
+    <script id="quarto-html-after-body" type="application/javascript">
+    window.document.addEventListener("DOMContentLoaded", function (event) {
+      const toggleBodyColorMode = (bsSheetEl) => {
+        const mode = bsSheetEl.getAttribute("data-mode");
+        const bodyEl = window.document.querySelector("body");
+        if (mode === "dark") {
+          bodyEl.classList.add("quarto-dark");
+          bodyEl.classList.remove("quarto-light");
+        } else {
+          bodyEl.classList.add("quarto-light");
+          bodyEl.classList.remove("quarto-dark");
+        }
+      }
+      const toggleBodyColorPrimary = () => {
+        const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+        if (bsSheetEl) {
+          toggleBodyColorMode(bsSheetEl);
+        }
+      }
+      toggleBodyColorPrimary();  
+      const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+      tabsets.forEach(function(tabset) {
+        const tabby = new Tabby('#' + tabset.id);
+      });
+      const isCodeAnnotation = (el) => {
+        for (const clz of el.classList) {
+          if (clz.startsWith('code-annotation-')) {                     
+            return true;
+          }
+        }
+        return false;
+      }
+      const clipboard = new window.ClipboardJS('.code-copy-button', {
+        text: function(trigger) {
+          const codeEl = trigger.previousElementSibling.cloneNode(true);
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+      });
+      clipboard.on('success', function(e) {
+        // button target
+        const button = e.trigger;
+        // don't keep focus
+        button.blur();
+        // flash "checked"
+        button.classList.add('code-copy-button-checked');
+        var currentTitle = button.getAttribute("title");
+        button.setAttribute("title", "Copied!");
+        let tooltip;
+        if (window.bootstrap) {
+          button.setAttribute("data-bs-toggle", "tooltip");
+          button.setAttribute("data-bs-placement", "left");
+          button.setAttribute("data-bs-title", "Copied!");
+          tooltip = new bootstrap.Tooltip(button, 
+            { trigger: "manual", 
+              customClass: "code-copy-button-tooltip",
+              offset: [0, -8]});
+          tooltip.show();    
+        }
+        setTimeout(function() {
+          if (tooltip) {
+            tooltip.hide();
+            button.removeAttribute("data-bs-title");
+            button.removeAttribute("data-bs-toggle");
+            button.removeAttribute("data-bs-placement");
+          }
+          button.setAttribute("title", currentTitle);
+          button.classList.remove('code-copy-button-checked');
+        }, 1000);
+        // clear code selection
+        e.clearSelection();
+      });
+      function tippyHover(el, contentFn) {
+        const config = {
+          allowHTML: true,
+          content: contentFn,
+          maxWidth: 500,
+          delay: 100,
+          arrow: false,
+          appendTo: function(el) {
+              return el.closest('section.slide') || el.parentElement;
+          },
+          interactive: true,
+          interactiveBorder: 10,
+          theme: 'light-border',
+          placement: 'bottom-start'
+        };
+          config['offset'] = [0,0];
+          config['maxWidth'] = 700;
+        window.tippy(el, config); 
+      }
+      const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+      for (var i=0; i<noterefs.length; i++) {
+        const ref = noterefs[i];
+        tippyHover(ref, function() {
+          // use id or data attribute instead here
+          let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+          try { href = new URL(href).hash; } catch {}
+          const id = href.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          return note.innerHTML;
+        });
+      }
+      const findCites = (el) => {
+        const parentEl = el.parentElement;
+        if (parentEl) {
+          const cites = parentEl.dataset.cites;
+          if (cites) {
+            return {
+              el,
+              cites: cites.split(' ')
+            };
+          } else {
+            return findCites(el.parentElement)
+          }
+        } else {
+          return undefined;
+        }
+      };
+      var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+      for (var i=0; i<bibliorefs.length; i++) {
+        const ref = bibliorefs[i];
+        const citeInfo = findCites(ref);
+        if (citeInfo) {
+          tippyHover(citeInfo.el, function() {
+            var popup = window.document.createElement('div');
+            citeInfo.cites.forEach(function(cite) {
+              var citeDiv = window.document.createElement('div');
+              citeDiv.classList.add('hanging-indent');
+              citeDiv.classList.add('csl-entry');
+              var biblioDiv = window.document.getElementById('ref-' + cite);
+              if (biblioDiv) {
+                citeDiv.innerHTML = biblioDiv.innerHTML;
+              }
+              popup.appendChild(citeDiv);
+            });
+            return popup.innerHTML;
+          });
+        }
+      }
+    });
+    </script>
+    
+
+</body></html>

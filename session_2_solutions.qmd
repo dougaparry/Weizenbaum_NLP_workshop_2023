@@ -1,0 +1,134 @@
+---
+title: "Session 2: Practical Exercises solutions"
+author: "DA Parry"
+format: html
+---
+
+## Load the packages for the analysis
+
+```{r}
+library(tidyverse)
+library(tidytext)
+```
+
+## Load the dataset and take a look
+
+```{r}
+#install.packages("schrute")
+library(schrute)
+
+theoffice_df <- theoffice
+glimpse(theoffice_df)
+```
+
+```{r}
+head(theoffice_df, 10)
+```
+
+## Preprocessing the dataset
+
+Create a tidy version of the dataset with words as your tokens and remove any stopwords that are unlikely to be informative for the analysis.
+
+```{r}
+theoffice_tidy <- theoffice_df |>  
+    unnest_tokens(word, text) |>  
+    anti_join(stop_words, by = "word")
+```
+
+## Analyse the dataset
+
+### What are some of the most common words used in the office?
+
+Determine the 20 most commons words in the dataset and visualise this as a bar chart.
+
+```{r}
+theoffice_tidy |> 
+  count(word, sort = TRUE) |> 
+  slice_max(order_by = n, n = 20) |> 
+  mutate(word = reorder(word, n)) |> 
+  ggplot(aes(n, word)) +
+  geom_col() +
+  labs(y = NULL) + 
+  theme_bw()
+```
+
+Determine the most common words used by each character in the show. For this analysis I've provided a list of the main characters that we're interested in. Filter the dataset to only focus on these characters. There's no need to plot the results.
+
+```{r}
+main_chars <- c("Michael", "Dwight", "Jim", 
+           "Pam", "Andy", "Ryan")
+
+theoffice_tidy |> 
+  filter(character %in% main_chars) |> 
+  count(character, word, sort = TRUE) |> 
+  group_by(character) |> 
+  slice_max(order_by = n, n = 20) 
+  
+```
+
+## Which words may tell us about the contents of the show?
+
+Calculate the tf-idf of the words in the text, using the episode name as your grouping variable. After you've calculated the tf-idf arrange it descending by tf-idf to find the most 'unusual' words.
+
+```{r}
+theoffice_tf_idf <- theoffice_tidy |> 
+  group_by(episode_name, word) |> 
+  tally() |>  
+  arrange(desc(n)) |> 
+  bind_tf_idf(word, episode_name, n) |> 
+  arrange(desc(tf_idf))
+
+theoffice_tf_idf
+```
+
+## Sentiment analysis of the office
+
+Let's analyse the sentiment for each character's dialogue using the AFINN lexicon provided by `tidytext`. For this analysis again you can focus on the main characters in the show.
+
+After you calculate the sentiment values, produce a plot showing the density of the sentiment for each character.
+
+```{r}
+main_chars <- c("Michael", "Dwight", "Jim", 
+           "Pam", "Andy", "Ryan")
+
+theoffice_sentiments <- theoffice_tidy |> 
+  filter(character %in% main_chars) |> 
+  inner_join(get_sentiments("afinn"), by = join_by(word))
+
+theoffice_sentiments |> 
+  ggplot(aes(x = value, color = character))+
+  geom_density() +
+  facet_wrap(~character)+
+  theme_bw() +
+  theme(legend.position="bottom",
+         strip.background = element_blank())
+  
+```
+
+## Bonus: sentence level analysis
+
+Use the `sentimentr` package to calculate the sentiment for each episode using sentence level sentiment accounting for valence shifters. Remember to scale the sentiment score to -1 to 1 after it has been calculated. Produce a plot for the resulting sentiment density. For this anlaysis, start with the `theoffice_df` dataframe.
+
+```{r}
+library(sentimentr)
+```
+
+```{r}
+theoffice_df |> 
+  get_sentences(text) |> 
+  sentiment_by(by = 'episode_name',
+               polarity_dt = lexicon::hash_sentiment_jockers_rinker,
+               valence_shifters_dt = lexicon::hash_valence_shifters,
+               amplifier.weight = 2,
+               n.before = 3, n.after = 3,
+               question.weight = 0,
+               neutral.nonverb.like = TRUE) |> 
+  mutate(ave_sentiment = general_rescale(ave_sentiment, 
+                                         lower = -1, 
+                                         upper = 1, 
+                                         keep.zero = TRUE)) |>
+  ggplot(aes(x = ave_sentiment))+
+  geom_density() +
+  theme_minimal()
+  
+```

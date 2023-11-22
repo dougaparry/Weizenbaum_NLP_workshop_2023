@@ -1,0 +1,138 @@
+---
+title: "Session 4: Practical Exercises solutions"
+author: "DA Parry"
+format: html
+---
+
+## Load the packages for the analysis
+```{r}
+library(tidyverse)
+library(tidytext)
+library(topicmodels)
+library(tm)
+library(ldatuning)
+```
+
+## Load the dataset and take a look
+```{r}
+#install.packages("schrute")
+library(schrute)
+
+theoffice_df <- theoffice
+glimpse(theoffice_df)
+```
+
+```{r}
+head(theoffice_df, 10)
+```
+
+## Preprocessing the dataset
+
+Using the dataframe provide, create a document term matrix that we can use for topic modelling. For our analysis we will treat each episode as a unique document. 
+
+Hint, remember to first tidy the dataset and then, for each document, count the number of times each word appears. Only after this can you cast to a DTM. 
+
+For this analysis, after tokenising and removing the standard stopwords, 1) filter out all words that are 3 characters or less in length and 2) use the provided `custom_stopwords` dataframe and also remove these words before creating the DTM.
+
+```{r}
+custom_stopwords <- tibble(word = c("yeah", "hey"))
+
+theoffice_tidy <- theoffice_df |>  
+    unnest_tokens(word, text) |>  
+    anti_join(stop_words, by = "word") |> 
+    anti_join(custom_stopwords, by="word") |> 
+    filter(nchar(word) > 2) 
+
+theoffice_dtm <- theoffice_tidy |> 
+  count(episode_name, word) |> 
+  cast_dtm(episode_name, word, n)
+```
+
+
+## What topics can we identify in the scripts?
+
+Fit an LDA topic model with 5 topics. Depending on your computer, this may take a minute to run. 
+
+FYI: This will likely not produce meaningful topics but we don't have the time to run the code to produce better topics.
+
+```{r}
+theoffice_lda <- LDA(theoffice_dtm, k = 5, control = list(seed = 1234))
+theoffice_lda
+```
+
+
+```{r}
+theoffice_topics <- tidy(theoffice_lda, matrix = "beta")
+
+theoffice_top_terms <- theoffice_topics |> 
+  group_by(topic) |> 
+  slice_max(beta, n = 10) |> 
+  ungroup() |> 
+  arrange(topic, -beta)
+
+theoffice_top_terms |> 
+  mutate(term = reorder_within(term, beta, topic)) |> 
+  ggplot(aes(beta, term, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  scale_y_reordered() + theme_minimal()
+```
+
+Fit an CTM topic model with 5 topics. Depending on your computer, this may take a minute to run. 
+
+FYI: This will likely not produce meaningful topics but we don't have the time to run the code to produce better topics.
+
+```{r}
+theoffice_ctm <- CTM(theoffice_dtm, k = 5, control = list(seed = 1234))
+theoffice_ctm
+
+theoffice_topics <- tidy(theoffice_ctm, matrix = "beta")
+
+theoffice_top_terms <- theoffice_topics |> 
+  group_by(topic) |> 
+  slice_max(beta, n = 10) |> 
+  ungroup() |> 
+  arrange(topic, -beta)
+
+theoffice_top_terms |> 
+  mutate(term = reorder_within(term, beta, topic)) |> 
+  ggplot(aes(beta, term, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  scale_y_reordered() + theme_minimal()
+```
+Extract the gamma matrix from the model and assign the topic with the highest gamma values to each document (episode).
+
+```{r}
+theoffice_documents <- tidy(theoffice_ctm, matrix = "gamma")
+
+theoffice_documents_topics <- theoffice_documents |>  
+  group_by(document) |>  
+  slice_max(gamma, n = 1) %>% 
+  ungroup()
+
+theoffice_documents_topics
+```
+
+## Bonus: Does IMDB rating differ by topic?
+
+After allocating topics to documents, left join this dataframe with the original dataframe, select the distinct combination of document, topic, and imdb_rating and determine the mean (with standard deviation) imdb rating for each topic
+
+```{r}
+theoffice_documents_topics |> 
+  left_join(theoffice_df, by = c("document" = "episode_name")) |> 
+  distinct(document, topic, imdb_rating) |> 
+  group_by(topic) |> 
+  summarise(mean_rating = mean(imdb_rating),
+            sd_rating = sd(imdb_rating))
+```
+```{r}
+theoffice_documents_topics |> 
+  left_join(theoffice_df, by = c("document" = "episode_name")) |> 
+  distinct(document, topic, imdb_rating) |> 
+  ggplot(aes(x = as.factor(topic), y = imdb_rating)) +
+  geom_boxplot() +
+  theme_bw()
+```
+
+

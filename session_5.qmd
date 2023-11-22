@@ -1,0 +1,153 @@
+---
+title: "Session 5: STM and wrap up"
+format:
+  revealjs:
+    slide-number: true
+    show-slide-number: print
+---
+
+## Debrief TM pracs
+
+## Structural Topic modelling
+
+The Structural Topic Model is a general framework for topic modeling with document-level covariate information.
+
+-   [Silge blogpost 1](https://juliasilge.com/blog/evaluating-stm/)
+-   [Silge blogpost 2](https://juliasilge.com/blog/sherlock-holmes-stm/)
+
+## The `stm` package
+
+![](figs/stm.png) 
+
+## Getting some data for the example
+
+```{r}
+#| echo: true
+#| code-overflow: wrap
+google_doc_id <- "1LcX-JnpGB0lU1iDnXnxB6WFqBywUKpew" # google file ID
+poliblogs<-read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", google_doc_id), stringsAsFactors = FALSE)
+
+head(poliblogs)
+```
+
+## Processing the text
+
+-   removes punctuation, stop words, numbers, and stems each word
+
+```{r}
+#| echo: true
+
+library(stm)
+processed <- textProcessor(poliblogs$documents, metadata = poliblogs)
+```
+
+## Creating the datasets for our STMs
+
+```{r}
+#| echo: true
+out <- prepDocuments(processed$documents, processed$vocab, processed$meta)
+
+docs <- out$documents
+vocab <- out$vocab
+meta <-out$meta
+```
+
+## Specifying a STM
+
+```{r}
+#| echo: true
+test_STM <- stm(documents = out$documents, vocab = out$vocab,
+              K = 10, 
+              prevalence =~ rating + s(day) ,
+              max.em.its = 75, 
+              data = out$meta,
+              init.type = "Spectral", verbose = FALSE)
+```
+
+## What does the model look like
+
+```{r}
+#| echo: true
+
+#td_beta <- tidy(test_STM)
+
+plot(test_STM)
+```
+
+
+```{r}
+#| echo: true
+labelTopics(test_STM)
+```
+
+
+## Inspect the output
+
+```{r}
+#| echo: true
+findThoughts(test_STM, texts = poliblogs$documents,
+     n = 2, topics = 3)
+```
+
+
+## Modeling topics with metadata:
+
+```{r}
+#| echo: true
+#| output-location: slide
+
+test_STM_2 <- stm(documents = out$documents, 
+                vocab = out$vocab,
+                K = 10, 
+                prevalence =~ rating + s(day) ,
+                content =~ rating,
+                max.em.its = 75, 
+                data = out$meta,
+                init.type = "Spectral", verbose = FALSE)
+
+labelTopics(test_STM_2)
+```
+
+
+## Visualise the relationships
+
+```{r}
+#| echo: true
+#| output-location: slide
+
+predict_topics<-estimateEffect(formula = 1:10 ~ rating + s(day), stmobj = test_STM, metadata = out$meta, uncertainty = "Global")
+
+plot(predict_topics, covariate = "rating", topics = c(3, 5, 9),
+ model = test_STM, method = "difference",
+ cov.value1 = "Liberal", cov.value2 = "Conservative",
+ xlab = "More Conservative ... More Liberal",
+ main = "Effect of Liberal vs. Conservative",
+ xlim = c(-.1, .1), labeltype = "custom",
+ custom.labels = c('Topic 3', 'Topic 5','Topic 9'))
+```
+
+## Visualise topics over time
+
+```{r}
+#| echo: true
+#| output-location: slide
+plot(predict_topics, "day", method = "continuous", topics = 3,
+model = z, printlegend = FALSE, xaxt = "n", xlab = "Time (2008)")
+monthseq <- seq(from = as.Date("2008-01-01"),
+to = as.Date("2008-12-01"), by = "month")
+monthnames <- months(monthseq)
+axis(1,at = as.numeric(monthseq) - min(as.numeric(monthseq)),
+labels = monthnames)
+```
+
+## Where to next?
+
+-   Resources
+    -   https://www.tidytextmining.com/
+    -   https://cran.r-project.org/web/packages/stm/vignettes/stmVignette.pdf
+-   other topics
+    -   word embeddings
+    -   advanced ML with text data
+    -   more complex tokenisation
+    -   non-English data
+

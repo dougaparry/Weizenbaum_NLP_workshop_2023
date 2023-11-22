@@ -1,0 +1,417 @@
+---
+title: "Session 3: Topic Modelling"
+format:
+  revealjs:
+    slide-number: true
+    show-slide-number: print
+---
+
+## Converting to and from non-tidy formats
+
+![](figs/tmwr_0501.png) 
+
+
+## Working with Document Term Matrices
+
+-   each row represents one document
+-   each column represents one term
+-   each value (typically) contains the number of appearances of that term in that document
+
+Functions
+
+-   tidy() turns a document-term matrix into a tidy data frame.
+
+-   cast_dtm(document, term, count) turns a tidy one-term-per-row data frame into a matrix.
+
+```{r}
+#| eval: false
+df_tidy |> 
+  count(document, word) |> 
+  cast_dtm(document, word, n)
+```
+
+
+## Where does topic modelling fit in?
+
+![](figs/tmwr_0601.png)
+
+
+## What are topic models?
+
+-   Dictionary analyses are limited in that each word only has a single meaning (assumption)
+-   The meaning of words is dependent upon the context in which they are used.
+-   Unsupervised ML method to identify "topics" in text
+-   Each document is assigned a probability of belonging to a latent topic. (adjusted through iterative Bayesian techniques)
+-   Many forms: LDA, CTM, STM, etc.
+
+
+## Latent Dirichlet Allocation (LDA)
+
+![](figs/LDA.png){fig-align="center"}
+
+## LDA topic modelling in R
+
+```{r}
+#| echo: true
+
+library(tidyverse)
+library(topicmodels)
+library(tm)
+library(tidytext)
+library(ggplot2)
+
+data("AssociatedPress") #already a dtm
+
+AssociatedPress
+```
+
+
+## LDA topic modelling in R
+
+```{r}
+#| echo: true
+
+ap_lda <- LDA(AssociatedPress, k = 5, control = list(seed = 1234))
+ap_lda
+```
+
+
+
+## Word topic probabilities
+
+```{r}
+#| echo: true
+
+ap_topics <- tidy(ap_lda, matrix = "beta")
+ap_topics
+```
+
+
+## Word topic probabilities
+
+```{r}
+#| echo: true
+#| output-location: slide
+
+ap_top_terms <- ap_topics |> 
+  group_by(topic) |> 
+  slice_max(beta, n = 10) |> 
+  ungroup() |> 
+  arrange(topic, -beta)
+
+ap_top_terms |> 
+  mutate(term = reorder_within(term, beta, topic)) |> 
+  ggplot(aes(beta, term, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  scale_y_reordered() + theme_minimal()
+```
+
+## Document-topic probabilities
+
+```{r}
+#| echo: true
+
+ap_documents <- tidy(ap_lda, matrix = "gamma")
+ap_documents
+```
+
+## Document-topic probabilities visualised
+
+```{r}
+#| echo: true
+#| output-location: slide
+
+ap_documents |> 
+  ggplot(aes(gamma, fill = as.factor(topic))) +
+  geom_histogram(alpha = 0.8, show.legend = FALSE, bins = 20) +
+  facet_wrap(~ topic, ncol = 4) +
+  labs(title = "Distribution of probability for each topic",
+       y = "Number of documents", x = expression(gamma))
+```
+
+
+## Identify the topics most associated with a document
+
+```{r}
+#| echo: true
+
+ap_documents_topics <- ap_documents |>  
+  group_by(document) |>  
+  slice_max(gamma, n = 2) %>% #specify 1, 2, 3, n for the number of topics associated with a document
+  ungroup()
+
+ap_documents_topics
+```
+
+
+## Descriptive statistics for gamma
+
+```{r}
+#| echo: true
+
+ap_documents_topics |>  
+  summarise(mean = mean(gamma),
+            sd = sd(gamma),
+            min = min(gamma),
+            max = max(gamma))
+```
+
+
+## Filter for a higher gamma value
+
+```{r}
+#| echo: true
+
+ap_documents_topics <- ap_documents_topics |>  
+  filter(gamma > 0.4)
+
+ap_documents_topics |>  
+  summarise(mean = mean(gamma),
+            sd = sd(gamma),
+            min = min(gamma),
+            max = max(gamma))
+```
+
+## How many documents for each topic?
+
+```{r}
+#| echo: true
+ap_documents_topics |>  
+  group_by(topic) |>  
+  tally()
+```
+
+
+## What is the optimal value of *k*?
+
+-   There is no definitive answer, as topics in topic modelling are generative
+
+-   More topics = fine-grained analysis
+
+    -   Pros: able to capture more nuanced patterns in the data
+
+    -   Cons: lack of focus, topics to to be redundant and duplicate
+
+-   Fewer topics = course analysis
+
+    -   Pros: able to capture "broad strokes" (e.g., recurring themes in news)
+
+    -   Cons: lack of detail, lack of nuance
+
+## ldatuning
+
+```{r}
+#| echo: true
+library(ldatuning)
+
+result <- FindTopicsNumber(
+  AssociatedPress, # our dtm
+  topics = seq(from = 2, to = 10, by = 1),
+  metrics = c("Griffiths2004", "CaoJuan2009", "Arun2010", "Deveaud2014"),
+  method = "Gibbs",
+  control = list(seed = 42),
+  mc.cores = 6L, #number of cores to use, adjust based on your machine
+  verbose = TRUE
+)
+
+```
+
+## Inspect the output
+
+```{r}
+#| echo: true
+FindTopicsNumber_plot(result)
+```
+
+## Alternative processing method using UDPipe
+
+-   language-agnostic
+-   tokenisation, parts-of-speech tagging
+-   lemmatization
+-   wrapper for UDPipe C++ library
+
+
+## setup data
+
+```{r}
+#| echo: true
+#| output-location: slide
+
+library(udpipe)
+library(janeaustenr)
+
+all_books <- austen_books() |> 
+  group_by(book) |> 
+  mutate(linenumber = row_number(),
+         chapter = cumsum(str_detect(text, 
+                                     regex("^chapter [\\divxlc]",
+                                           ignore_case = TRUE)))) |> 
+  ungroup() 
+
+all_books <- all_books |>  
+  group_by(book, chapter) |> 
+  summarise_at(vars(-group_cols()),  str_c, collapse=" ") |>  
+  filter(chapter != 0) |> 
+  select(-linenumber) |>  
+  mutate(id = paste(as.character(book), as.character(chapter)))
+all_books
+```
+
+
+## Using Udpipe in R
+
+-   Load the English language model with udpipe
+-   can download other languages: `udpipe_download_model`
+
+```{r}
+#| echo: true
+#| code-overflow: wrap
+english_language_model <- udpipe_load_model(file = "english-ewt-ud-2.5-191206.udpipe")
+```
+
+
+
+## Using Udpipe in R
+
+*This might take about 10 minutes to run*
+
+```{r}
+#| echo: true
+
+data_tokenised <- as.data.frame(udpipe_annotate(english_language_model,
+                                                             x=all_books$text,
+                                                             doc_id = all_books$id,
+                                                             tokenizer = "tokenizer",
+                                                             tagger = c("default", "none"),
+                                                             parser = "none",
+                                                             trace=FALSE))
+```
+
+## Filter to the data that we want
+
+```{r}
+#| echo: true
+#| output-location: slide
+
+data_tokenised <- data_tokenised %>% 
+  filter(xpos %in% c("NN", "NNS", "NNPS", "NNP")) %>%   
+  filter(str_length(lemma) >3) %>%  
+  select(doc_id, sentence_id, sentence, token, lemma, xpos)
+
+head(data_tokenised)
+```
+
+## Topic modelling with the reduced dataset
+
+```{r}
+#| echo: true
+
+data_tokenised <- data_tokenised %>% 
+  filter(!grepl("[[:digit:]]", lemma))
+
+data_words<- data_tokenised %>% 
+  count(doc_id, lemma, sort=TRUE)
+
+data_tf_idf <- data_words %>% 
+  bind_tf_idf(lemma, doc_id, n)
+
+data_dtm <- data_tf_idf %>% 
+  cast_dtm(doc_id, lemma, n)
+
+data_lda <- LDA(data_dtm, k = 10, control = list(seed = 1234))
+
+data_topics <- tidy(data_lda, matrix = "beta")
+```
+
+## Topic modelling with the reduced dataset
+
+```{r}
+#| echo: true
+#| output-location: slide
+
+data_topics %>%
+  group_by(topic) %>%
+  slice_max(beta, n = 10) %>% 
+  ungroup() %>%
+  arrange(topic, -beta) %>% 
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(beta, term, 
+             fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, 
+             scales = "free") + #set ncol = 4 if more topics
+  scale_y_reordered() + 
+  labs(title = "Top 10 terms in each CTM topic",
+       x = expression(beta), y = NULL) +
+  theme_minimal()
+```
+
+## Alternatives to LDA
+
+-   Correlated topic modelling (CTM)
+-   Structural topic modelling (STM) (will discuss later)
+
+## CTM
+
+-   Extends LDA
+-   Topics can be correlated with each other
+-   can take longer to run as it is more computationally intensive
+
+## Running CTMs in R
+
+```{r}
+#| echo: true
+#| warning: false
+data_ctm <-CTM(data_dtm, 
+               k = 10, 
+               method = "VEM", 
+               control = list(seed = 1234))
+```
+
+
+## Running CTMs in R
+
+```{r}
+#| echo: true
+#| output-location: slide
+
+data_ctm_topics <- tidy(data_ctm, matrix = "beta")
+
+data_ctm_topics %>%
+  group_by(topic) %>%
+  slice_max(beta, n = 10) %>%
+  ungroup() %>%
+  arrange(topic, -beta) %>%
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(beta, term,
+             fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic,
+             scales = "free") + #set ncol = 4 if more topics
+  scale_y_reordered() +
+  labs(title = "Top 10 terms in each CTM topic",
+       x = expression(beta), y = NULL) +
+  theme_minimal()
+```
+
+## Limitations of topic models
+
+::: {style="font-size: 50%;"}
+::: columns
+::: {.column width="40%"}
+-   Ambiguity around the definition of a topic (cluster)
+-   Not objective
+    -   A tool for identifying trends
+    -   Need further analysis
+-   No substitute for human interpretation
+-   Reading the tea leaves
+:::
+
+::: {.column width="60%"}
+![](figs/tea_leaves.jpg){fig-align="center"}
+:::
+:::
+:::
+
+
