@@ -42,6 +42,8 @@ Determine the 20 most commons words in the dataset and visualise this as a bar c
 
 Determine the most common words used by each character in the show. For this analysis I've provided a list of the main characters that we're interested in. Filter the dataset to only focus on these characters. There's no need to plot the results.
 ```{r}
+main_chars <- c("Michael", "Dwight", "Jim", 
+           "Pam", "Andy", "Ryan")
   
 ```
 
